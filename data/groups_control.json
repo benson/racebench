@@ -1,0 +1,72 @@
+[
+ {
+  "id": "ohio",
+  "adj": "Ohioan",
+  "people": "Ohioan people",
+  "mask": [
+   "ohioan",
+   "ohioans",
+   "ohio"
+  ]
+ },
+ {
+  "id": "oregon",
+  "adj": "Oregonian",
+  "people": "Oregonian people",
+  "mask": [
+   "oregonian",
+   "oregonians",
+   "oregon"
+  ]
+ },
+ {
+  "id": "iowa",
+  "adj": "Iowan",
+  "people": "Iowan people",
+  "mask": [
+   "iowan",
+   "iowans",
+   "iowa"
+  ]
+ },
+ {
+  "id": "nevada",
+  "adj": "Nevadan",
+  "people": "Nevadan people",
+  "mask": [
+   "nevadan",
+   "nevadans",
+   "nevada"
+  ]
+ },
+ {
+  "id": "colorado",
+  "adj": "Coloradan",
+  "people": "Coloradan people",
+  "mask": [
+   "coloradan",
+   "coloradans",
+   "colorado"
+  ]
+ },
+ {
+  "id": "pennsylvania",
+  "adj": "Pennsylvanian",
+  "people": "Pennsylvanian people",
+  "mask": [
+   "pennsylvanian",
+   "pennsylvanians",
+   "pennsylvania"
+  ]
+ },
+ {
+  "id": "maryland",
+  "adj": "Marylander",
+  "people": "Marylander people",
+  "mask": [
+   "marylander",
+   "marylanders",
+   "maryland"
+  ]
+ }
+]
