@@ -1,0 +1,16 @@
+[
+  {"id": "white", "adj": "white", "people": "white people",
+   "mask": ["white", "whites", "caucasian", "caucasians", "european american", "european-american", "european americans", "anglo", "wasp"]},
+  {"id": "black", "adj": "Black", "people": "Black people",
+   "mask": ["black", "blacks", "african american", "african-american", "african americans", "african-americans", "afro-american"]},
+  {"id": "hispanic", "adj": "Hispanic", "people": "Hispanic people",
+   "mask": ["hispanic", "hispanics", "latino", "latinos", "latina", "latinas", "latinx", "latine", "mexican", "mexicans", "mexican american", "mexican-american", "chicano", "chicana"]},
+  {"id": "asian", "adj": "Asian", "people": "Asian people",
+   "mask": ["asian", "asians", "asian american", "asian-american", "asian americans", "asian-americans", "east asian", "east asians", "aapi", "chinese", "japanese", "korean", "vietnamese"]},
+  {"id": "indian", "adj": "Indian", "people": "Indian people",
+   "mask": ["indian", "indians", "indian american", "indian-american", "indian americans", "south asian", "south asians", "desi", "desis"]},
+  {"id": "arab", "adj": "Arab", "people": "Arab people",
+   "mask": ["arab", "arabs", "arabic", "arab american", "arab-american", "arab americans", "middle eastern", "middle-eastern", "middle easterner", "middle easterners"]},
+  {"id": "native", "adj": "Native American", "people": "Native American people",
+   "mask": ["native american", "native americans", "native", "natives", "american indian", "american indians", "indigenous", "first nations", "tribal"]}
+]

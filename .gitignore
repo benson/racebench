@@ -1,0 +1,4 @@
+.codex-home/
+.env
+__pycache__/
+runs/
