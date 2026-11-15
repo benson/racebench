@@ -100,6 +100,9 @@ def make_masker(groups):
 
 
 def parse_number(text):
+    bold = re.search(r"\*\*([^*]*\d[^*]*)\*\*", text)
+    if bold:
+        text = bold[1]
     match = re.search(r"[-+]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?", text)
     if match:
         value = float(match[0].replace(",", ""))
