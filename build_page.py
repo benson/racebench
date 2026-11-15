@@ -7,7 +7,7 @@ from pathlib import Path
 from swapbench import DEFAULT_GROUPS, in_run, select
 
 ROOT = Path(__file__).resolve().parent
-EXAMPLES = ["offensive_trust", "fired", "comedian", "neighborhood", "salary"]
+EXAMPLES = ["offensive_trust", "fired", "comedian", "roast", "neighborhood", "salary"]
 
 
 def font_css():
