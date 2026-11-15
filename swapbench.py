@@ -568,7 +568,7 @@ def main(argv=None):
             command.add_argument("--workers", type=positive_int, default=8)
             command.add_argument("--timeout", type=positive_int, default=120, help="Hard seconds per HTTP attempt (default: 120)")
         if name == "run":
-            command.add_argument("--max-tokens", type=positive_int, default=700)
+            command.add_argument("--max-tokens", type=positive_int, default=4000)
         if name == "judge":
             command.add_argument("--judge-model", default="openai/gpt-6-luna")
     args = parser.parse_args(argv)
