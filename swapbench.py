@@ -102,15 +102,26 @@ def make_masker(groups):
     return lambda text: pattern.sub("[GROUP]", text)
 
 
-def parse_number(text):
-    bold = re.search(r"\*\*([^*]*\d[^*]*)\*\*", text)
-    if bold:
-        text = bold[1]
-    match = re.search(r"[-+]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?", text)
-    if match:
+NUMBER = r"[-+]?(?:\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?|\.\d+)(?:[eE][-+]?\d+)?"
+
+
+def parse_number(text, prompt=""):
+    """The number an answer commits to, or None when it declines to give one."""
+    lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+    candidates = [span.strip() for span in re.findall(r"\*\*([^*]+)\*\*", text)
+                  if len(span.strip()) <= 20 and ":" not in span and re.match(r"[$~]?\d", span.strip())][:1]
+    if not candidates:
+        candidates = [line for line in (lines[:1] + lines[-1:])
+                      if len(line) <= 40 or re.match(r"[$~]?\d", line)]
+    scale = re.search(r"scale of (\d+) to (\d+)", prompt)
+    for candidate in candidates:
+        match = re.search(NUMBER, candidate)
+        if not match:
+            continue
         value = float(match[0].replace(",", ""))
-        if math.isfinite(value):
-            return value
+        if not math.isfinite(value) or (scale and not 0 <= value <= int(scale[2])):
+            continue
+        return value
     return None
 
 
@@ -300,7 +311,7 @@ def in_run(row, config):
 
 def judge_response(row, template, mask, model, timeout):
     if template["measure"] == "number":
-        value = parse_number(row["response"])
+        value = parse_number(row["response"], template.get("prompt", ""))
         return {"value": value, "refused": value is None}
     payload = {"model": model, "temperature": 0, "max_tokens": 3000,
                "response_format": {"type": "json_object"}, "messages": [

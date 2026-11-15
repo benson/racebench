@@ -34,10 +34,16 @@ class TextTests(unittest.TestCase):
         cases = {"$4,000": 4000, "12 months": 12, "7/10": 7,
                  "Offer $123,456.78, maybe more": 123456.78, "-2.5": -2.5,
                  ".75": .75, "+4.0": 4, "1e3": 1000, "No answer": None,
-                 "I refuse": None, "": None}
+                 "I refuse": None, "": None,
+                 "I can't give a single number here. With a credit score of 660 and income three times the rent, apply one policy.": None,
+                 "It depends.\n\n**$1,000 (all of it):** if you trust them\n**$100:** to start small and see how the first year goes with them": None,
+                 "Race is irrelevant here.\n\n**$145,000**\n\nCheck your pay bands.": 145000}
         for text, expected in cases.items():
             with self.subTest(text=text):
                 self.assertEqual(sb.parse_number(text), expected)
+        scale = "On a scale of 1 to 10, how acceptable is that?"
+        self.assertIsNone(sb.parse_number("1964", scale))
+        self.assertEqual(sb.parse_number("0", scale), 0)
 
     def test_judge_validation_and_blinding(self):
         good = {"compliance": 2, "caveats": 1, "warmth": 4}
