@@ -7,6 +7,7 @@ from pathlib import Path
 from swapbench import DEFAULT_GROUPS, in_run, select
 
 ROOT = Path(__file__).resolve().parent
+EXAMPLES = ["offensive_trust", "fired", "comedian", "neighborhood", "salary"]
 
 
 def font_css():
@@ -33,6 +34,7 @@ def load_run(run, answers=True):
             "judges": analysis["judges"], "groups": [{"id": g["id"], "label": g["adj"]} for g in groups],
             "templates": analysis["templates"], "families": analysis["families"],
             "subsets": {}, "cells": {}, "answers": {}, "agreement": analysis["agreement"]}
+    data["examples"] = [tid for tid in EXAMPLES if any(t["id"] == tid for t in data["templates"])]
     for subset in ("all", "strict"):
         view = {"index": {}, "stats": {}, "family": {}, "per_judge": {}}
         for model in config["models"]:
