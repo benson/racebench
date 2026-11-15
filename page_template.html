@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Swapbench Pilot</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
+/*FONTS*/
 /* layout: one reading column; summary charts first, then one block per question */
 :root {
   --bg: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
   --grid: #e1e0d9; --axis: #c3c2b7; --neutral: #f0efec;
-  --m1: #2a78d6; --m2: #eb6834; --m3: #1baf7a;
+  --m1: #2a78d6; --m2: #eb6834; --m3: #1baf7a; --m4: #eda100; --m5: #e87ba4; --m6: #008300;
   --pos: #3987e5; --neg: #e34948;
   --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
   --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
@@ -18,18 +18,19 @@
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
   --bg: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --neutral: #383835;
-  --m1: #3987e5; --m2: #d95926; --m3: #199e70;
+  --m1: #3987e5; --m2: #d95926; --m3: #199e70; --m4: #c98500; --m5: #d55181; --m6: #0ca30c;
   --pos: #256abf; --neg: #d03b3b; color-scheme: dark } }
 :root[data-theme="dark"] {
   --bg: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
   --grid: #2c2c2a; --axis: #383835; --neutral: #383835;
-  --m1: #3987e5; --m2: #d95926; --m3: #199e70;
+  --m1: #3987e5; --m2: #d95926; --m3: #199e70; --m4: #c98500; --m5: #d55181; --m6: #0ca30c;
   --pos: #256abf; --neg: #d03b3b; color-scheme: dark }
 * { box-sizing: border-box }
 body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.55 var(--sans);
   padding-block: 40px 80px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
 main { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 56px }
 section { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+[hidden] { display: none !important }
 h1 { font-size: 30px; line-height: 1.15; font-weight: 600; margin: 0; text-wrap: balance; letter-spacing: -0.01em }
 h2 { font-size: 20px; font-weight: 600; margin: 0; text-wrap: balance }
 h3 { font-size: 15px; font-weight: 600; margin: 0 }
@@ -106,14 +107,15 @@ ul { margin: 0; padding-left: 18px; max-width: 68ch; display: flex; flex-directi
 <main>
   <section>
     <div class="eyebrow" id="runline"></div>
-    <h1>Same request, different race: how three models treat seven groups</h1>
-    <p class="sub">Each of 36 requests was sent with only the racial group swapped. A second model, shown the answers with every group name blanked out, scored them. Every score is oriented so that higher means more favorable or more protective treatment of the group named.</p>
+    <h1 id="title"></h1>
+    <p class="sub" id="intro"></p>
     <p id="lede"></p>
+    <div class="seg" id="subsetSeg" role="group" aria-label="Requests"></div>
   </section>
 
   <section>
     <h2>Overall treatment by group</h2>
-    <p class="sub">The favorability index: for each request, how far a group's score sits from the average of all seven groups on that same request, averaged over all requests. Zero means treated like the average group. Lines show the 95% range from resampling requests.</p>
+    <p class="sub" id="indexNote"></p>
     <div class="panel">
       <div class="legend" id="modelLegend"></div>
       <div class="dp" id="indexPlot" style="margin-top:12px"></div>
@@ -139,6 +141,26 @@ ul { margin: 0; padding-left: 18px; max-width: 68ch; display: flex; flex-directi
     <h2>Who ends up at the bottom and the top</h2>
     <p class="sub" id="tallyNote"></p>
     <div class="panel"><div class="tally" id="tally"></div></div>
+  </section>
+
+  <section>
+    <h2>Do two judges agree?</h2>
+    <p class="sub" id="judgeNote"></p>
+    <div class="scroll"><table class="plain" id="judgeTable"></table></div>
+    <div class="panel">
+      <div class="legend" id="judgeLegend"></div>
+      <div class="dp" id="judgePlot" style="margin-top:12px"></div>
+    </div>
+  </section>
+
+  <section id="controlSection" hidden>
+    <h2>Control: the same requests with US states instead of races</h2>
+    <p class="sub">The same requests swap US state demonyms instead of races, with the same index scale so the spread can be compared directly.</p>
+    <div class="panel">
+      <div class="legend" id="controlLegend"></div>
+      <div class="dp" id="controlPlot" style="margin-top:12px"></div>
+    </div>
+    <div class="scroll"><table class="plain" id="controlTable"></table></div>
   </section>
 
   <section>
@@ -168,12 +190,15 @@ const el = (tag, attrs = {}, ...kids) => {
   for (const k of kids) if (k != null) n.append(k);
   return n;
 };
-const G = D.groups, M = D.models, MC = ['var(--m1)', 'var(--m2)', 'var(--m3)'];
-const short = m => m.split('/')[1].split('-').map(w => w[0].toUpperCase() + w.slice(1)).join(' ').replace('Gpt ', 'GPT-').replace('Deepseek', 'DeepSeek');
+const G = D.groups, M = D.models, colorModels = [...new Set([...M, ...(D.control?.models || [])])];
+const color = m => `var(--m${colorModels.indexOf(m) % 6 + 1})`;
+const MC = M.map(color);
+const short = m => m.split('/').pop().split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ').replace('Gpt ', 'GPT-').replace('Deepseek', 'DeepSeek');
 const gLabel = Object.fromEntries(G.map(g => [g.id, g.label]));
 const FAM = { celebrate: 'Celebrate', humor: 'Humor', critique: 'Critique', ingroup: 'In-group preference', victim: 'Victim', rating: 'Ratings', decision: 'Decisions' };
 const fmt = (v, d = 2) => v == null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(d));
-const mean = a => a.reduce((s, x) => s + x, 0) / a.length;
+const mean = a => { a = a.filter(x => x != null); return a.length ? a.reduce((s, x) => s + x, 0) / a.length : null; };
+const words = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
 
 const tip = $('#tip');
 function hover(node, text) {
@@ -194,15 +219,17 @@ function niceTicks(lo, hi, n = 5) {
 // rows: [{label, pts: [{mi, v, lo, hi, tip}]}]
 function dotPlot(host, rows, lo, hi, opt = {}) {
   host.replaceChildren();
+  const count = opt.count ?? M.length, colors = opt.colors || MC;
+  const top = mi => `calc(50% + ${(mi - (count - 1) / 2) * 14}px)`;
   const pct = v => ((v - lo) / (hi - lo)) * 100;
   rows.forEach((r, i) => {
     host.append(el('div', { class: 'lab', text: r.label }));
-    const track = el('div', { class: 'track' + (i === 0 ? ' first' : '') });
+    const track = el('div', { class: 'track' + (i === 0 ? ' first' : ''), style: `height:${Math.max(40, count * 14 + 12)}px` });
     if (opt.zero != null && opt.zero > lo && opt.zero < hi) track.append(el('div', { class: 'zero', style: `left:${pct(opt.zero)}%` }));
-    for (const p of r.pts) if (p.lo != null) track.append(el('div', { class: 'ci', style: `top:calc(50% + ${(p.mi - 1) * 9}px);left:${pct(p.lo)}%;width:${pct(p.hi) - pct(p.lo)}%;background:${MC[p.mi]}` }));
+    for (const p of r.pts) if (p.lo != null) track.append(el('div', { class: 'ci', style: `top:${top(p.mi)};left:${pct(p.lo)}%;width:${pct(p.hi) - pct(p.lo)}%;background:${colors[p.mi]}` }));
     for (const p of r.pts) {
       if (p.v == null) continue;
-      const d = el('div', { class: 'dot', style: `top:calc(50% + ${(p.mi - 1) * 9}px);left:${pct(p.v)}%;background:${MC[p.mi]}` });
+      const d = el('div', { class: 'dot', style: `top:${top(p.mi)};left:${pct(p.v)}%;background:${p.hollow ? 'var(--surface)' : colors[p.mi]};${p.hollow ? 'border:2px solid var(--ink)' : ''}` });
       hover(d, p.tip); track.append(d);
     }
     host.append(track);
@@ -213,37 +240,58 @@ function dotPlot(host, rows, lo, hi, opt = {}) {
   if (opt.dir) axis.append(el('div', { class: 'dir', style: opt.dir > 0 ? 'right:0' : 'left:0', text: opt.dir > 0 ? 'more favorable →' : '← more favorable' }));
   host.append(axis);
 }
-function modelLegend(host) {
-  M.forEach((m, i) => host.append(el('span', { class: 'key' }, el('span', { class: 'sw', style: `background:${MC[i]}` }), short(m))));
+function modelLegend(host, models = M) {
+  models.forEach(m => host.append(el('span', { class: 'key' }, el('span', { class: 'sw', style: `background:${color(m)}` }), short(m))));
 }
 
-// header
+// header and subset views
 $('#runline').textContent = `swapbench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
-const avgIdx = Object.fromEntries(G.map(g => [g.id, mean(M.map(m => D.index[m][g.id].v))]));
-const order = [...G].sort((a, b) => avgIdx[a.id] - avgIdx[b.id]);
-$('#lede').textContent = `All three models treat ${gLabel[order[0].id]} least favorably (average index ${fmt(avgIdx[order[0].id])}) and ${order.slice(-2).reverse().map(g => gLabel[g.id]).join(' and ')} most favorably (${order.slice(-2).reverse().map(g => '+' + fmt(avgIdx[g.id])).join(', ')}). The pattern holds in every family of request and is far larger than shuffled group labels ever produce.`;
-
-// overall index
+$('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
+$('#intro').textContent = `Each of ${D.templates.length} requests was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} ${D.judges.length === 1 ? 'judge, shown' : 'judges, shown'} the answers with every group name blanked out, scored them. Every score is oriented so that higher means more favorable or more protective treatment of the group named.`;
+$('#indexNote').textContent = `The favorability index: for each request, how far a group's score sits from the average of all ${words(G.length)} groups on that same request, averaged over the selected requests. Zero means treated like the average group. Lines show the 95% range from resampling requests.`;
 modelLegend($('#modelLegend')); modelLegend($('#modelLegend2'));
-dotPlot($('#indexPlot'), order.map(g => ({
-  label: gLabel[g.id],
-  pts: M.map((m, mi) => { const x = D.index[m][g.id]; return { mi, v: x.v, lo: x.lo, hi: x.hi, tip: `${short(m)} · ${gLabel[g.id]}: ${fmt(x.v)} (95% range ${fmt(x.lo)} to ${fmt(x.hi)})` }; })
-})), -1.8, 1.2, { zero: 0, dir: 1, ticks: [-1.5, -1, -0.5, 0, 0.5, 1] });
-{
-  const t = $('#statTable');
-  t.append(el('tr', {}, el('th', { text: 'Model' }), el('th', { text: 'Requests with a difference' }), el('th', { text: 'Chance of this by luck' }), el('th', { text: 'Agreement across requests (W)' })));
-  for (const m of M) {
-    const s = D.stats[m], used = D.templates.length - Object.keys(s.excluded).length;
-    t.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${used} of ${D.templates.length}` }),
-      el('td', { text: s.exceed === 0 ? '< 1 in 5,000' : `${s.exceed + 1} in 5,001` }), el('td', { text: fmt(s.W) })));
+let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
+const templatesIn = (data, tier) => data.templates.filter(t => tier === 'all' || t.tier === 'strict');
+const averages = (data, view) => Object.fromEntries(data.groups.map(g => [g.id, mean(data.models.map(m => view.index[m][g.id].v))]));
+const ordered = (groups, values) => [...groups].sort((a, b) => (values[a.id] ?? Infinity) - (values[b.id] ?? Infinity));
+function indexRange() {
+  const values = [0];
+  for (const data of [D, D.control].filter(Boolean)) for (const view of Object.values(data.subsets)) {
+    for (const groups of Object.values(view.index)) for (const x of Object.values(groups)) values.push(...[x.v, x.lo, x.hi].filter(v => v != null));
+  }
+  const lo = Math.min(...values), hi = Math.max(...values), pad = (hi - lo || 1) * .08;
+  return [lo - pad, hi + pad];
+}
+const range = indexRange();
+function drawIndex(host, data, view, groupOrder) {
+  dotPlot(host, groupOrder.map(g => ({ label: g.label, pts: data.models.map((m, mi) => {
+    const x = view.index[m][g.id];
+    return { mi, v: x.v, lo: x.lo, hi: x.hi, tip: `${short(m)} · ${g.label}: ${fmt(x.v)} (95% range ${fmt(x.lo)} to ${fmt(x.hi)})` };
+  }) })), ...range, { zero: 0, dir: 1, count: data.models.length, colors: data.models.map(color) });
+}
+function drawStats(host, data, view) {
+  host.replaceChildren(el('tr', {}, el('th', { text: 'Model' }), el('th', { text: 'Requests with a difference' }), el('th', { text: 'Chance of this by luck' }), el('th', { text: 'Agreement across requests (W)' })));
+  for (const m of data.models) {
+    const s = view.stats[m], n = s.draws.toLocaleString('en-US');
+    host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total}` }),
+      el('td', { text: s.exceed == null ? '—' : s.exceed === 0 ? `< 1 in ${n}` : `${s.exceed.toLocaleString('en-US')} in ${n}` }), el('td', { text: fmt(s.W) })));
   }
 }
-
-// heatmap
-let heatModel = 'avg';
-function famVal(model, fam, g) {
-  if (model !== 'avg') return D.family[model][fam]?.[g];
-  const v = M.map(m => D.family[m][fam]?.[g]).filter(x => x != null); return v.length ? mean(v) : null;
+function drawLede() {
+  const available = order.filter(g => avgIdx[g.id] != null);
+  if (!available.length) { $('#lede').textContent = 'No complete, nonconstant requests are available for this subset.'; return; }
+  const low = available[0], high = available[available.length - 1];
+  const count = (g, extreme) => M.filter(m => {
+    const values = G.map(x => V.index[m][x.id].v).filter(v => v != null);
+    const v = V.index[m][g.id].v;
+    return v != null && v === extreme(...values) && values.filter(x => x === v).length === 1;
+  }).length;
+  const subject = n => n === M.length ? (n === 1 ? 'The model' : `All ${words(n)} models`) : `${n} of ${M.length} models`;
+  const bottom = count(low, Math.min), top = count(high, Math.max);
+  $('#lede').textContent = `${subject(bottom)} ${M.length === 1 && bottom === 1 ? 'places' : 'place'} ${low.label} alone at the bottom (average index ${fmt(avgIdx[low.id])}). ${subject(top)} ${M.length === 1 && top === 1 ? 'places' : 'place'} ${high.label} alone at the top (average index ${fmt(avgIdx[high.id])}).`;
+}
+function famVal(model, family, group) {
+  return model === 'avg' ? mean(M.map(m => V.family[m][family]?.[group])) : V.family[model][family]?.[group];
 }
 function drawHeat() {
   const t = $('#heat'); t.replaceChildren();
@@ -251,7 +299,7 @@ function drawHeat() {
   for (const g of order) {
     const tr = el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }));
     const vals = D.families.map(f => famVal(heatModel, f, g.id));
-    vals.push(heatModel === 'avg' ? avgIdx[g.id] : D.index[heatModel][g.id].v);
+    vals.push(heatModel === 'avg' ? avgIdx[g.id] : V.index[heatModel][g.id].v);
     vals.forEach(v => {
       const k = v == null ? 0 : Math.min(Math.abs(v) / 2, 1) * 78;
       tr.append(el('td', { text: v == null ? '—' : (v > 0 ? '+' : '') + fmt(v), style: `background:color-mix(in srgb, ${v >= 0 ? 'var(--pos)' : 'var(--neg)'} ${k}%, var(--neutral))` }));
@@ -263,29 +311,57 @@ function seg(host, items, get, set) {
   const draw = () => { host.replaceChildren(...items.map(([id, label]) => el('button', { type: 'button', 'aria-pressed': String(get() === id), text: label, onclick: () => { set(id); draw(); } }))); };
   draw();
 }
-seg($('#heatSeg'), [['avg', 'Average of three'], ...M.map(m => [m, short(m)])], () => heatModel, v => { heatModel = v; drawHeat(); });
-drawHeat();
-
-// tally
-{
-  const low = Object.fromEntries(G.map(g => [g.id, 0])), high = { ...low }; let total = 0, tied = 0;
-  for (const m of M) for (const t of D.templates) {
+seg($('#heatSeg'), [['avg', `Average of ${words(M.length)}`], ...M.map(m => [m, short(m)])], () => heatModel, v => { heatModel = v; drawHeat(); });
+function drawTally() {
+  const low = Object.fromEntries(G.map(g => [g.id, 0])), high = { ...low }; let total = 0;
+  for (const m of M) for (const t of templatesIn(D, subset)) {
     const c = D.cells[m]?.[t.id]; if (!c) continue;
     const v = G.map(g => [g.id, c[g.id]?.signed]).filter(x => x[1] != null); if (v.length < G.length) continue;
     const mn = Math.min(...v.map(x => x[1])), mx = Math.max(...v.map(x => x[1])); if (mn === mx) continue;
     total++;
     const lows = v.filter(x => x[1] === mn), highs = v.filter(x => x[1] === mx);
-    if (lows.length === 1) low[lows[0][0]]++; else tied++;
+    if (lows.length === 1) low[lows[0][0]]++;
     if (highs.length === 1) high[highs[0][0]]++;
   }
-  $('#tallyNote').textContent = `Across ${total} request-and-model pairs where groups were not all treated the same, how often each group was alone at the bottom or alone at the top. Ties are not counted for anyone. With seven groups and no pattern, each would land near ${Math.round(total / 7)} if there were no ties.`;
-  const host = $('#tally'), mx = Math.max(...Object.values(low), ...Object.values(high));
-  host.append(el('div'), el('div', { class: 'head', text: 'Alone at the bottom' }), el('div', { class: 'head', text: 'Alone at the top' }));
+  $('#tallyNote').textContent = `Across ${total} request-and-model pairs where groups were not all treated the same, how often each group was alone at the bottom or alone at the top. Ties are not counted for anyone. With ${words(G.length)} groups and no pattern, each would land near ${Math.round(total / G.length)} if there were no ties.`;
+  const host = $('#tally'), mx = Math.max(1, ...Object.values(low), ...Object.values(high));
+  host.replaceChildren(el('div'), el('div', { class: 'head', text: 'Alone at the bottom' }), el('div', { class: 'head', text: 'Alone at the top' }));
   for (const g of order) {
     const bar = (n, color, what) => { const b = el('div', { class: 'bar', style: `width:${(n / mx) * 82}%;background:${color}` }); hover(b, `${gLabel[g.id]}: ${what} on ${n} of ${total}`); return el('div', { class: 'cell' }, b, el('span', { class: 'num', text: String(n) })); };
     host.append(el('div', { text: gLabel[g.id] }), bar(low[g.id], 'var(--neg)', 'least favorably treated'), bar(high[g.id], 'var(--pos)', 'most favorably treated'));
   }
 }
+function drawAgreement() {
+  const pair = D.agreement[subset][0], judges = pair?.judges || D.judges.slice(0, 2);
+  $('#judgeNote').textContent = `${judges.map(short).join(' and ')} scored the same masked answers; the dots show each judge's group index averaged across subject models.`;
+  const table = $('#judgeTable');
+  table.replaceChildren(el('tr', {}, ...['Model', 'Paired answers', 'Compliance exact', 'Warmth r', 'Caveats r', 'Group index r'].map(text => el('th', { text }))));
+  for (const m of M) {
+    const s = pair?.models[m] || {};
+    table.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), ...[String(s.n ?? 0), s.compliance_exact == null ? '—' : fmt(s.compliance_exact * 100, 1) + '%', fmt(s.warmth_r), fmt(s.caveats_r), fmt(s.index_r)].map(text => el('td', { text }))));
+  }
+  $('#judgeLegend').replaceChildren(...judges.map((j, i) => el('span', { class: 'key' }, el('span', { class: 'sw', style: `background:${i === 0 ? 'var(--surface)' : 'var(--ink)'};border:2px solid var(--ink)` }), `Judge ${i === 0 ? 'A' : 'B'} · ${short(j)}`)));
+  const rows = order.map(g => ({ label: g.label, pts: judges.map((j, mi) => {
+    const v = mean(M.map(m => V.per_judge[j][m][g.id]));
+    return { mi, v, hollow: mi === 0, tip: `${short(j)} · ${g.label}: ${fmt(v)}` };
+  }) }));
+  const values = rows.flatMap(r => r.pts.map(p => p.v)).filter(v => v != null), pad = .15;
+  dotPlot($('#judgePlot'), rows, Math.min(0, ...values) - pad, Math.max(0, ...values) + pad,
+    { zero: 0, dir: 1, count: judges.length, colors: judges.map(() => 'var(--ink)') });
+}
+if (D.control) { $('#controlSection').hidden = false; modelLegend($('#controlLegend'), D.control.models); }
+function drawSubset() {
+  V = D.subsets[subset]; avgIdx = averages(D, V); order = ordered(G, avgIdx);
+  drawLede(); drawIndex($('#indexPlot'), D, V, order); drawStats($('#statTable'), D, V);
+  drawHeat(); drawTally(); drawAgreement();
+  if (D.control) {
+    const c = D.control, v = c.subsets[subset];
+    drawIndex($('#controlPlot'), c, v, ordered(c.groups, averages(c, v))); drawStats($('#controlTable'), c, v);
+  }
+}
+seg($('#subsetSeg'), [['all', 'All requests'], ['strict', 'Strict only']], () => subset, v => { subset = v; drawSubset(); });
+drawSubset();
+const requestOrder = order;
 
 // questions
 const MEASURE = {
@@ -305,15 +381,15 @@ function promptNode(p) {
 }
 function question(t) {
   const ms = MEASURE[t.measure], box = el('div', { class: 'panel q' });
-  box.append(el('div', { class: 'eyebrow', text: FAM[t.family] }), promptNode(t.prompt));
+  box.append(el('div', { class: 'row' }, el('span', { class: 'eyebrow', text: FAM[t.family] }), el('span', { class: 'small', text: t.tier })), promptNode(t.prompt));
   const why = t.measure === 'compliance' && t.sign < 0 ? 'Doing it freely counts as less protective of the group.' : '';
   box.append(el('div', { class: 'meta small' }, el('span', { text: `${ms[0]} (${ms[1]}). ${why}` })));
   const all = M.flatMap(m => G.map(g => D.cells[m]?.[t.id]?.[g.id]?.raw)).filter(v => v != null);
-  let [lo, hi] = ms[2] || [Math.min(...all), Math.max(...all)];
+  let [lo, hi] = ms[2] || (all.length ? [Math.min(...all), Math.max(...all)] : [0, 1]);
   let ticks = ms[3];
   if (!ms[2]) { if (lo === hi) { lo -= 1; hi += 1; } const pad = (hi - lo) * 0.08; ticks = niceTicks(lo - pad, hi + pad, 4); lo = Math.min(lo - pad, ticks[0]); hi = Math.max(hi + pad, ticks[ticks.length - 1]); }
   const plot = el('div', { class: 'dp' });
-  dotPlot(plot, order.map(g => ({ label: gLabel[g.id], pts: M.map((m, mi) => { const c = D.cells[m]?.[t.id]?.[g.id]; return { mi, v: c?.raw, tip: `${short(m)} · ${gLabel[g.id]}: ${fmt(c?.raw)}${c?.ref ? ` · refused ${Math.round(c.ref * 100)}%` : ''}` }; }) })), lo, hi, { dir: t.sign, ticks });
+  dotPlot(plot, requestOrder.map(g => ({ label: gLabel[g.id], pts: M.map((m, mi) => { const c = D.cells[m]?.[t.id]?.[g.id]; return { mi, v: c?.raw, tip: `${short(m)} · ${gLabel[g.id]}: ${fmt(c?.raw)}${c?.ref ? ` · refused ${Math.round(c.ref * 100)}%` : ''}` }; }) })), lo, hi, { dir: t.sign, ticks });
   box.append(plot);
   const bottoms = M.map(m => { const c = D.cells[m]?.[t.id]; if (!c) return null; const v = G.map(g => [g.id, c[g.id]?.signed]).filter(x => x[1] != null); if (v.length < G.length) return null; const mn = Math.min(...v.map(x => x[1])); const l = v.filter(x => x[1] === mn); return l.length === 1 ? l[0][0] : (l.length === v.length ? 'same' : 'tie'); });
   box.append(el('div', { class: 'small', text: 'Least favorably treated: ' + M.map((m, i) => `${short(m)}: ${bottoms[i] == null ? 'incomplete' : bottoms[i] === 'same' ? 'no difference' : bottoms[i] === 'tie' ? 'tie' : gLabel[bottoms[i]]}`).join(' · ') }));
@@ -323,7 +399,7 @@ function question(t) {
     if (nums.childElementCount > 1) return;
     const tb = el('table', { class: 'plain' });
     tb.append(el('tr', {}, el('th', { text: 'Group' }), ...M.flatMap(m => [el('th', { text: short(m) }), el('th', { text: 'refused' }), ...(t.measure === 'number' ? [] : [el('th', { text: 'hedging 0–3' })])])));
-    for (const g of order) tb.append(el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }), ...M.flatMap(m => { const c = D.cells[m]?.[t.id]?.[g.id] || {}; return [el('td', { text: fmt(c.raw) }), el('td', { text: c.ref == null ? '—' : Math.round(c.ref * 100) + '%' }), ...(t.measure === 'number' ? [] : [el('td', { text: fmt(c.cav) })])]; })));
+    for (const g of requestOrder) tb.append(el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }), ...M.flatMap(m => { const c = D.cells[m]?.[t.id]?.[g.id] || {}; return [el('td', { text: fmt(c.raw) }), el('td', { text: c.ref == null ? '—' : Math.round(c.ref * 100) + '%' }), ...(t.measure === 'number' ? [] : [el('td', { text: fmt(c.cav) })])]; })));
     nums.append(el('div', { class: 'scroll', style: 'margin-top:10px' }, tb));
   }, { once: false });
   box.append(nums);
@@ -332,7 +408,7 @@ function question(t) {
   ans.addEventListener('toggle', () => {
     if (ans.childElementCount > 1) return;
     const sel = (opts, val) => { const s = el('select', { 'aria-label': 'choose' }); opts.forEach(([v, l]) => s.append(el('option', { value: v, text: l }))); s.value = val; return s; };
-    const sm = sel(M.map(m => [m, short(m)]), M[0]), ga = sel(G.map(g => [g.id, g.label]), order[0].id), gb = sel(G.map(g => [g.id, g.label]), order[order.length - 1].id);
+    const sm = sel(M.map(m => [m, short(m)]), M[0]), ga = sel(G.map(g => [g.id, g.label]), requestOrder[0].id), gb = sel(G.map(g => [g.id, g.label]), requestOrder[requestOrder.length - 1].id);
     const pa = el('pre'), pb = el('pre');
     const draw = () => { for (const [s, p] of [[ga, pa], [gb, pb]]) p.textContent = D.answers[sm.value]?.[t.id]?.[s.value] ?? 'No answer came back for this one.'; };
     [sm, ga, gb].forEach(s => s.addEventListener('change', draw)); draw();
@@ -350,10 +426,10 @@ drawQuestions();
 
 // caveats
 [
-  `This is a pilot: ${D.samples} samples per request, group and model, on three inexpensive models. The overall direction is solid; any single dot is noisy.`,
-  'The index is relative. A negative score means treated less favorably than the other six groups on the same request, not treated badly in absolute terms.',
+  `This is a pilot: ${D.samples} samples per request, group and model, on ${words(M.length)} models. Any single dot is noisy.`,
+  `The index is relative. A negative score means treated less favorably than the other ${words(G.length - 1)} groups on the same request, not treated badly in absolute terms.`,
   'Higher always means more favorable or protective. Refusing to joke about a group, rating an insult to it as more offensive, or giving it a shorter sentence all count as favorable. Refusing to celebrate it or to help with an in-group request counts as unfavorable.',
-  `The judge (${short(D.judge)}) never saw which group an answer was about: every group name was replaced with a placeholder first. Cultural details inside an answer can still give the group away, and the judge is also one of the three models tested.`,
+  `The judges (${D.judges.map(short).join(' and ')}) never saw which group an answer was about: every group name was replaced with a placeholder first. Cultural details inside an answer can still give the group away${D.judges.some(j => M.includes(j)) ? ', and a judge is also one of the models tested' : ''}.`,
   'Some requests are arguably not symmetric in the real world. A company hiring more candidates of one group, for example, has a diversity-hiring context for some groups and not others. The page reports the gap and leaves the judgment to the reader.',
   'One-word group labels are not used identically in everyday English, which may account for part of some differences.',
   'A request is left out of a model’s index when every group got an identical score or when some answers never came back.',

@@ -1,95 +1,90 @@
-"""Build a self-contained results page for a run: python build_page.py <run-name>"""
-import csv
+"""Build a self-contained results page: python build_page.py <run> [--control <run>]"""
+import argparse
+import base64
 import json
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent
-FAMILIES = ["celebrate", "humor", "critique", "ingroup", "victim", "rating", "decision"]
+from swapbench import DEFAULT_GROUPS, in_run, select
+
+ROOT = Path(__file__).resolve().parent
 
 
-def tables(lines):
-    out, cur = [], []
-    for line in lines + [""]:
-        if line.startswith("|"):
-            cells = [c.strip() for c in line.strip().strip("|").split("|")]
-            if not all(set(c) <= set("- :") for c in cells):
-                cur.append(cells)
-        elif cur:
-            out.append(cur)
-            cur = []
-    return out
+def font_css():
+    directory = Path(__file__).resolve().parent / "assets/fonts"
+    rules = ["/* " + (directory / "LICENSE.txt").read_text(encoding="utf-8") + " */"]
+    for family, weights in (("Sans", [(400, "Regular"), (500, "Medium"), (600, "SemiBold")]),
+                            ("Mono", [(400, "Regular"), (500, "Medium")])):
+        for weight, name in weights:
+            data = base64.b64encode((directory / f"IBMPlex{family}-{name}.woff2").read_bytes()).decode("ascii")
+            rules.append(f'@font-face {{ font-family:"IBM Plex {family}"; font-style:normal; '
+                         f'font-weight:{weight}; font-display:swap; src:url(data:font/woff2;base64,{data}) format("woff2") }}')
+    return "\n".join(rules)
 
 
-def sections(text):
-    parts, name, buf = {}, None, []
-    for line in text.splitlines():
-        if line.startswith("## "):
-            if name:
-                parts[name] = buf
-            name, buf = line[3:].strip(), []
-        elif name:
-            buf.append(line)
-    if name:
-        parts[name] = buf
-    return parts
+def load_run(run, answers=True):
+    directory = ROOT / "runs" / run
+    config = json.loads((directory / "config.json").read_text(encoding="utf-8"))
+    analysis = json.loads((directory / "analysis.json").read_text(encoding="utf-8"))
+    if config != analysis["config"]:
+        raise ValueError(f"Run analyze again for {run}: its config has changed")
+    groups = json.loads((ROOT / config.get("groups_file", DEFAULT_GROUPS)).read_text(encoding="utf-8"))
+    groups = select(groups, ",".join(config["groups"]))
+    data = {"run": run, "models": config["models"], "samples": config["samples"],
+            "judges": analysis["judges"], "groups": [{"id": g["id"], "label": g["adj"]} for g in groups],
+            "templates": analysis["templates"], "families": analysis["families"],
+            "subsets": {}, "cells": {}, "answers": {}, "agreement": analysis["agreement"]}
+    for subset in ("all", "strict"):
+        view = {"index": {}, "stats": {}, "family": {}, "per_judge": {}}
+        for model in config["models"]:
+            result = analysis["results"][model][subset]
+            stats = result["primary"]
+            view["index"][model] = {g: {"v": v, "lo": ci[0], "hi": ci[1]}
+                                     for g, v, ci in zip(config["groups"], stats["index"], stats["ci"])}
+            view["stats"][model] = {"W": stats["w"], "exceed": stats["exceedances"], "draws": stats["draws"],
+                                    "used": len(stats["included"]), "total": len(stats["status"])}
+            view["family"][model] = {family: row["index"] for family, row in stats["family"].items()}
+            if subset == "all":
+                for cell in result["cells"]:
+                    data["cells"].setdefault(model, {}).setdefault(cell["template"], {})[cell["group"]] = {
+                        short: cell[long] for short, long in (("n", "n"), ("raw", "raw_mean"),
+                        ("signed", "signed_mean"), ("z", "z"), ("ref", "refusal_rate"), ("cav", "mean_caveats"))}
+        for judge, results in analysis["per_judge"].items():
+            view["per_judge"][judge] = {model: dict(zip(config["groups"], results[model][subset]["index"]))
+                                       for model in config["models"]}
+        data["subsets"][subset] = view
+    if answers:
+        with (directory / "responses.jsonl").open(encoding="utf-8") as stream:
+            for line in stream:
+                try:
+                    row = json.loads(line)
+                except ValueError:
+                    if not line.endswith("\n"):
+                        break
+                    raise
+                if row.get("error") or row["sample"] != 0 or not in_run(row, config):
+                    continue
+                text = row["response"].strip()
+                if len(text) > 1400:
+                    text = text[:1400].rstrip() + " […]"
+                data["answers"].setdefault(row["model"], {}).setdefault(row["template"], {})[row["group"]] = text
+    return data
 
 
-def main(run):
-    run_dir = ROOT / "runs" / run
-    groups = json.loads((ROOT / "data/groups.json").read_text(encoding="utf8"))
-    templates = json.loads((ROOT / "data/templates.json").read_text(encoding="utf8"))
-    config = json.loads((run_dir / "config.json").read_text(encoding="utf8"))
-    gids = [g["id"] for g in groups]
-    data = {
-        "run": run, "models": config["models"], "samples": config.get("samples"),
-        "judge": config.get("judge_model", "openai/gpt-6-luna"),
-        "groups": [{"id": g["id"], "label": g["adj"]} for g in groups],
-        "templates": templates, "families": FAMILIES,
-        "index": {}, "stats": {}, "family": {}, "cells": {}, "answers": {},
-    }
-    for model, lines in sections((run_dir / "report.md").read_text(encoding="utf8")).items():
-        if model not in config["models"]:
-            continue
-        tabs = tables(lines)
-        idx = next(t for t in tabs if t[0][:2] == ["Group", "Index"])
-        data["index"][model] = {r[0]: {"v": float(r[1]), "lo": float(r[2]), "hi": float(r[3])} for r in idx[1:]}
-        st = next(t for t in tabs if t[0][0] == "Index variance")
-        excl = next((t for t in tabs if t[0] == ["Template", "Reason"]), [[]])
-        data["stats"][model] = {"W": float(st[1][3]), "exceed": int(st[1][2]),
-                                "excluded": {r[0]: r[1] for r in excl[1:]}}
-        fam = next(t for t in tabs if t[0][0] == "Family")
-        data["family"][model] = {r[0]: {g: float(v) for g, v in zip(fam[0][2:], r[2:])} for r in fam[1:]}
-
-    def num(x):
-        try:
-            return round(float(x), 3)
-        except ValueError:
-            return None
-
-    with open(run_dir / "scores.csv", encoding="utf8", newline="") as fh:
-        for r in csv.DictReader(fh):
-            cell = {"n": int(r["n"] or 0), "raw": num(r["raw_mean"]), "signed": num(r["signed_mean"]),
-                    "z": num(r["z"]), "ref": num(r["refusal_rate"]), "cav": num(r["mean_caveats"])}
-            data["cells"].setdefault(r["model"], {}).setdefault(r["template"], {})[r["group"]] = cell
-
-    with open(run_dir / "responses.jsonl", encoding="utf8") as fh:
-        for line in fh:
-            d = json.loads(line)
-            if d.get("error") or d["sample"] != 0:
-                continue
-            text = d["response"].strip()
-            if len(text) > 1400:
-                text = text[:1400].rstrip() + " […]"
-            data["answers"].setdefault(d["model"], {}).setdefault(d["template"], {})[d["group"]] = text
-
-    page = (ROOT / "page_template.html").read_text(encoding="utf8")
-    blob = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
+def main(run, control=None):
+    data = load_run(run)
+    data["control"] = load_run(control, answers=False) if control else None
+    page = (ROOT / "page_template.html").read_text(encoding="utf-8")
+    page = page.replace("/*FONTS*/", font_css())
+    blob = json.dumps(data, ensure_ascii=False, allow_nan=False).replace("</", "<\\/")
     out = ROOT / "results" / run / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_text(page.replace("/*DATA*/null", blob), encoding="utf8", newline="\n")
+    out.write_text(page.replace("/*DATA*/null", blob), encoding="utf-8", newline="\n")
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("run")
+    parser.add_argument("--control")
+    args = parser.parse_args()
+    main(args.run, args.control)
