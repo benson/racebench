@@ -173,3 +173,18 @@ Moving directly between rows never resets the prompt to its placeholder state.
 Pointer-path checks across all six cards at desktop and phone widths found
 zero resets, gaps, wrapped labels, or layout shifts. Both layouts were visually
 reviewed. Study data and statistical results remain unchanged.
+
+## Card-header evidence labels
+
+Benson requested that the statistical result become supporting information in
+the upper-right corner of each card, with p-values and explanation on hover.
+The four positive results now say “Significant group differences detected,”
+salary says “No significant difference detected,” and the daughter example
+says “Observed identical scores.” The separate result/p-value block beneath
+the chart is removed. The header label reuses the keyboard/touch-capable help
+control and explains the adjusted p-value, standard Bonferroni correction,
+threshold, and limits. Neither test results nor significance criteria changed.
+
+Verified all six statuses, desktop/phone tooltip placement, hover and dismissal,
+removal of the former block, and absence of page overflow or JavaScript errors.
+Desktop and phone screenshots were reviewed.

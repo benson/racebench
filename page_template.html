@@ -125,11 +125,14 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .chart-row > span:first-child { white-space: nowrap }
 .chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 @media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
-.example-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 14px }
-.p-help { position: relative; align-self: stretch }
-.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 12px; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
+.example-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px }
+.example-heading h3 { min-width: 0 }
+.p-help { position: relative; flex: 0 0 150px; max-width: 46%; text-align: right }
+.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 11px; line-height: 1.4; text-align: right; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
 .p-value:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px }
-.p-explanation { position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, 100%); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400 }
+.p-explanation { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, calc(100vw - 64px)); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400; text-align: left }
+.p-explanation > * { display: block }
+.p-explanation > * + * { margin-top: 8px }
 .p-explanation.above { top: auto; bottom: calc(100% + 8px) }
 .answer-range { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 14px 12px; align-items: center; padding-top: 4px; font-size: 13px }
 .range-track { position: relative; height: 6px; margin-inline: 5px; border-radius: 3px; background: var(--grid) }
@@ -660,9 +663,14 @@ function valueChart(t, values, groups = G, onGroup = null) {
 function pValueHelp(t, check) {
   const p = check.adjusted_p < .001 ? `≈ ${check.adjusted_p.toFixed(4)}` : `= ${check.adjusted_p.toFixed(2)}`;
   const id = `${t.id}-p-explanation`;
-  const button = el('button', { class: 'p-value', type: 'button', text: `Adjusted p ${p}`, 'aria-describedby': id, 'aria-controls': id, 'aria-expanded': 'false' });
-  const result = check.spread === 0 ? ' Here, every group got the same score.' : check.significant ? '' : ' Here, we can’t tell whether the gap is more than normal variation between answers. A value of 1 doesn’t mean the groups are equal.';
-  const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true, text: `A small p-value means we’d rarely see a gap this large if changing the race made no difference. It doesn’t tell you how big the gap is—the chart shows that. We adjusted this number because checking ${D.example_checks.family_size} questions gives more chances to find a gap by accident.${result}` });
+  const conclusion = check.spread === 0 ? 'Observed identical scores' : check.significant ? 'Significant group differences detected' : 'No significant difference detected';
+  const button = el('button', { class: 'p-value', type: 'button', text: conclusion, 'aria-describedby': id, 'aria-controls': id, 'aria-expanded': 'false' });
+  const result = check.spread === 0 ? 'Every group received the same score in the saved answers.' : check.significant ? 'The test detects differences across the seven groups. It does not mean every pair differs or every model shows the same pattern.' : 'We can’t tell whether this gap is more than normal variation between answers. A value of 1 doesn’t prove the groups are equal.';
+  const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true },
+    el('strong', { text: `Adjusted p ${p}` }),
+    el('span', { text: `Uses a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. We count adjusted p-values below 0.05 as significant.` }),
+    el('span', { text: 'A small p-value means we’d rarely see a gap this large if changing the race made no difference. The chart shows the size of the gap.' }),
+    el('span', { text: result }));
   const wrap = el('span', { class: 'p-help' }, button, explanation);
   let pinned = false;
   function show() {
@@ -686,18 +694,16 @@ function drawExamples() {
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
     const prompt = promptNode(t.prompt, true);
-    const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), prompt);
+    const check = D.example_checks?.results[id];
+    const heading = el('div', { class: 'example-heading' }, el('h3', { text: questionLabel(t) }));
+    if (check?.status === 'available') heading.append(pValueHelp(t, check));
+    const card = el('article', { class: 'panel example' }, heading, prompt);
     const range = answerRange(t);
     if (range?.question) card.append(el('p', { class: 'range-question', text: range.question }));
     card.append(el('span', { class: 'small', text: `Average of ${matched.length} models` }));
     const chart = rangeChart(t, values, G, group => previewPrompt(prompt, group));
     document.addEventListener('pointerdown', e => { if (!chart.contains(e.target)) previewPrompt(prompt, null); });
     card.append(chart);
-    const check = D.example_checks?.results[id];
-    if (check?.status === 'available') {
-      const conclusion = check.spread === 0 ? 'Identical observed group scores' : check.significant ? 'Statistically significant group differences' : 'Group difference not established';
-      card.append(el('p', { class: 'example-evidence' }, el('strong', { text: conclusion }), pValueHelp(t, check)));
-    }
     card.append(firstAnswers(t, M[0], groupA, groupB));
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
     const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
