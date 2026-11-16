@@ -157,7 +157,8 @@ p { margin: 0; max-width: 68ch }
 .key { display: inline-flex; align-items: center; gap: 6px }
 .sw { width: 10px; height: 10px; border-radius: 50%; display: inline-block }
 .sw.sq { border-radius: 2px }
-.examples { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+.examples { display: grid; grid-template-columns: minmax(0, 1fr); gap: 24px }
+.example-model { align-self: flex-start }
 .raw-bars { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; margin-top: auto }
 .raw-track, .raw-axis { margin-right: 64px }
 .raw-bar { position: relative; height: 8px; background: var(--ink2); border-radius: 0 3px 3px 0 }
@@ -240,7 +241,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 @media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
 .example-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 4px }
-.example-heading h3 { min-width: 0 }
+.example-heading h3 { min-width: 0; font-size: 18px }
 .p-help { position: relative; max-width: 100%; text-align: left }
 .p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 12px; line-height: 1.4; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
 .p-value:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px }
@@ -257,11 +258,11 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .range-ends span:nth-child(2):not(:last-child) { text-align: center }
 .range-ends span:last-child { text-align: right }
 .range-question { font-size: 14px; color: var(--ink2) }
-.example .sample-text { font-size: 13px; line-height: 1.55; max-height: 160px }
+.example .sample-text { font-size: 14px; line-height: 1.6; max-height: none; overflow: visible }
 .answer-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
 .example-answers { display: flex; flex-direction: column; gap: 10px }
 .answer { min-width: 0; display: flex; flex-direction: column; gap: 8px }
-.answer-label { font-size: 13px; font-weight: 600 }
+.answer-label { margin: 0; font-size: 14px; font-weight: 600 }
 .sample-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-height: 240px; overflow: auto; overscroll-behavior: contain; font: 14px/1.6 var(--sans); padding: 12px; border: 1px solid var(--grid); border-radius: 4px; background: var(--bg) }
 .sample-text:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 .text-button { align-self: flex-start; padding: 0; border: 0; border-radius: 2px; background: none; color: var(--ink2); text-decoration: underline; text-underline-offset: 3px; font: 13px var(--sans); cursor: pointer }
@@ -304,7 +305,7 @@ a { color: inherit; text-underline-offset: 3px }
   .request-status { margin-left: 0 }
   .answer-pair { grid-template-columns: 1fr }
   .question-chart { grid-template-columns: 90px minmax(0, 1fr) 58px; gap: 8px }
-  .example .sample-text { max-height: 150px; padding: 9px }
+  .example .sample-text { padding: 12px }
 }
 </style>
 </head>
@@ -318,6 +319,7 @@ a { color: inherit; text-underline-offset: 3px }
 
   <section id="examplesSection">
     <h2>What changes when the race changes?</h2>
+    <label class="field example-model">Example answer model<select id="exampleModel"></select></label>
     <div class="examples" id="examples"></div>
   </section>
 
@@ -731,33 +733,43 @@ function answerText(model, id, group) {
 function savedText(text, name) {
   return el('div', { class: 'sample-text', tabindex: '0', 'aria-label': name, text });
 }
-function firstAnswers(t, model, a, b) {
-  const modelSelect = makeSelect(M.map(m => [m, short(m)]), model, `${questionLabel(t)}: answer model`);
-  const updates = [], groupSelects = [];
+let exampleModel = M[0];
+const exampleAnswerPanels = [];
+function exampleAnswers(t, model, a, b) {
+  const picked = [a, b], updates = [];
+  const heading = el('p', { class: 'small', text: `Example answers · ${short(model)}` });
   let nextSide = 0;
-  const pair = el('div', { class: 'answer-pair' }, ...[a, b].map((g, i) => {
-    const select = makeSelect(G.map(group => [group.id, label(group.id)]), g, `${questionLabel(t)}: ${i === 0 ? 'first' : 'second'} race`);
+  const pair = el('div', { class: 'answer-pair' }, ...picked.map((g, i) => {
+    const name = el('h4', { class: 'answer-label', text: label(g), 'aria-live': 'polite' });
     const answer = savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`);
+    answer.removeAttribute('tabindex');
     function update() {
-      answer.textContent = answerText(model, t.id, select.value);
-      answer.setAttribute('aria-label', `${label(select.value)} answer from ${short(model)}`);
-      answer.scrollTop = 0;
+      name.textContent = label(picked[i]);
+      answer.textContent = answerText(model, t.id, picked[i]);
+      answer.setAttribute('aria-label', `${label(picked[i])} answer from ${short(model)}`);
     }
     updates.push(update);
-    groupSelects.push(select);
-    select.addEventListener('change', update);
-    return el('div', { class: 'answer' }, select, answer);
+    return el('div', { class: 'answer' }, name, answer);
   }));
-  modelSelect.addEventListener('change', () => { model = modelSelect.value; updates.forEach(update => update()); });
   return {
-    node: el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'Example answers' }, modelSelect), pair),
+    node: el('div', { class: 'example-answers' }, heading, pair),
+    setModel(value) {
+      model = value;
+      heading.textContent = `Example answers · ${short(model)}`;
+      updates.forEach(update => update());
+    },
     pickGroup(group) {
-      groupSelects[nextSide].value = group;
+      picked[nextSide] = group;
       updates[nextSide]();
       nextSide = 1 - nextSide;
     }
   };
 }
+$('#exampleModel').replaceChildren(...M.map(m => el('option', { value: m, text: short(m) })));
+$('#exampleModel').addEventListener('change', e => {
+  exampleModel = e.target.value;
+  exampleAnswerPanels.forEach(panel => panel.setModel(exampleModel));
+});
 function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
 function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
 function valueChart(t, values, groups = G, onGroup = null) {
@@ -798,6 +810,7 @@ function pValueHelp(t, check) {
   return wrap;
 }
 function drawExamples() {
+  exampleAnswerPanels.length = 0;
   $('#exampleTestMethod').hidden = !D.example_checks;
   $('#exampleCorrection').hidden = !D.example_checks;
   if (D.example_checks) $('#exampleCorrection').textContent = `Featured-example p-values use a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. Adjusted p-values below 0.05 are called statistically significant.`;
@@ -819,7 +832,8 @@ function drawExamples() {
     const chart = rangeChart(t, values, G, group => previewPrompt(prompt, group));
     document.addEventListener('pointerdown', e => { if (!chart.contains(e.target)) previewPrompt(prompt, null); });
     card.append(chart);
-    const answers = firstAnswers(t, M[0], groupA, groupB);
+    const answers = exampleAnswers(t, exampleModel, groupA, groupB);
+    exampleAnswerPanels.push(answers);
     card.append(answers.node);
     chart.addEventListener('click', e => {
       const row = e.target.closest('.chart-row');

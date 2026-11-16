@@ -63,3 +63,25 @@ headings, capitalization, salary dots, share-image response, and axis bounds at
 The larger answer-card layout and control reduction still await Benson's reaction
 to the proposed full-width/shared-selector versus two-column arrangement. These
 changes are not deployed.
+
+## Approved example-card layout
+
+Benson selected full-width cards with one shared model selector. Implemented:
+
+- One card per row, with question and chart above the answers.
+- Two fully expanded answers side by side on desktop, stacked on phones.
+- One model selector for all six cards, with the active model named in each card.
+- Chart-row clicks alternate between the first and second race. Each card keeps
+  its pair when the shared model changes. Native button keyboard/touch behavior
+  remains available; the twelve redundant race dropdowns are removed.
+- Example text has no nested scroll box; chart scale, evidence labels, and
+  underlying saved responses are unchanged.
+
+Browser validation covered all six models, all six cards' stored answer text,
+selection preservation, independent race pairs, keyboard activation, touch
+emulation, and 1280px/390px/320px layouts with no horizontal overflow. Desktop
+and phone screenshots reviewed. This completes the previously pending layout
+work; the whole cleanup remains an unpublished batch.
+
+Independent visual review found no actionable issues in the full-width layout,
+answer spacing, label legibility, focus treatment, or phone stacking.
