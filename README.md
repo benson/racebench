@@ -1,4 +1,4 @@
-# swapbench
+# racebench
 
 A small Python 3.13, standard-library-only benchmark with a static results page.
 It sends the same request with different racial group labels to each model,
@@ -15,14 +15,16 @@ without model calls:
 python build_page.py pilot2-reviewed --control control1-reviewed --main
 ```
 
-No additional paid runs are authorized. Keep future work on this request offline.
+No additional paid runs are authorized. Use saved data for analysis and page generation.
 The original `results/pilot2/index.html` remains as the historical presentation.
 The alternate, more constrained prompt study is retained as a separate artifact,
 not the main benchmark or a like-for-like replication of its question. It is governed by
 [`docs/confirmation-protocol.md`](docs/confirmation-protocol.md), with independently
 authored prompts and a locally frozen manifest under `studies/confirmation1/`.
 Human review is a separate, explicitly pending stage until real reviewers return
-scores. This repository remains local; no publication or paid CI is configured.
+scores. The main results page is published at https://bensonperry.com/racebench/.
+Deployment publishes only the self-contained main page; model collection is never
+part of deployment. Archived study artifacts remain separate from the main site.
 
 ## Confirmation workflow
 
@@ -31,7 +33,7 @@ python confirmation.py estimate
 python confirmation.py freeze
 python confirmation.py verify
 python collect_confirmation.py --budget 35 --workers 64
-python swapbench.py analyze --name confirmation1
+python racebench.py analyze --name confirmation1
 python confirmation.py analyze
 python confirmation.py audit
 python build_page.py confirmation1
@@ -108,10 +110,10 @@ parsed locally and excluded from the separate judge-agreement indices.
 From this directory, set the key in PowerShell and run:
 ```powershell
 $env:OPENROUTER_API_KEY = 'your-key'
-python swapbench.py estimate --models a,b --samples 2
-python swapbench.py run --name pilot --models a,b --samples 2
-python swapbench.py judge --name pilot --judge-models openai/gpt-6-luna,google/gemini-3.8-flash
-python swapbench.py analyze --name pilot
+python racebench.py estimate --models a,b --samples 2
+python racebench.py run --name pilot --models a,b --samples 2
+python racebench.py judge --name pilot --judge-models openai/gpt-6-luna,google/gemini-3.8-flash
+python racebench.py analyze --name pilot
 python build_page.py pilot
 python -m unittest
 ```

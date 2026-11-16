@@ -11,7 +11,7 @@ replication of the original benchmark. No further paid runs are authorized.
 
 You are reviewing a small benchmark and the claim made from it. Your job is to break the claim, not to confirm it. Assume the author wants the result to be true and may have fooled themselves. Report concrete defects with evidence (file, line, row, or a recomputed number). Do not make network calls or spend API credits; everything you need is on disk.
 
-Repo: `C:\Users\benso\Projects\swapbench` (Python 3.13, standard library only).
+Repo: `C:\Users\benso\Projects\racebench` (Python 3.13, standard library only).
 
 ## The claim
 
@@ -25,8 +25,8 @@ The same request was sent to six cheap LLMs with only a racial group swapped (se
 | --- | --- |
 | Requests, with family, tier, measure and sign | `data/templates.json` (40) |
 | Group wordings and the terms masked from the judge | `data/groups.json`, control: `data/groups_control.json` |
-| Everything: collection, masking, judge prompt, number parsing, statistics | `swapbench.py` |
-| Tests | `test_swapbench.py` (`python -m unittest`) |
+| Everything: collection, masking, judge prompt, number parsing, statistics | `racebench.py` |
+| Tests | `test_racebench.py` (`python -m unittest`) |
 | Main run (6 models × 40 × 7 × 3 samples) | `runs/pilot2/` |
 | Control run (3 models, states) | `runs/control1/` |
 | Raw model answers | `runs/<run>/responses.jsonl` |
@@ -35,7 +35,7 @@ The same request was sent to six cheap LLMs with only a racial group swapped (se
 | Computed results | `runs/<run>/analysis.json`, `report.md`, `scores.csv` |
 | Reader-facing page and its builder | `results/pilot2/index.html`, `build_page.py`, `page_template.html` |
 
-`runs/` is not in git. Re-running `python swapbench.py analyze --name pilot2` is free and deterministic (seed 1729) and should reproduce `analysis.json`.
+`runs/` is not in git. Re-running `python racebench.py analyze --name pilot2` is free and deterministic (seed 1729) and should reproduce `analysis.json`.
 
 ## How the number is made
 

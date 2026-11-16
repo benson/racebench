@@ -1,7 +1,7 @@
 """Dimension-separated, tie-preserving analysis of group-swap records.
 
 ``analyze(records, templates, groups, models, ...)`` accepts the same sample
-records as swapbench.analyze_records. Numeric records supply ``value``; judged
+records as racebench.analyze_records. Numeric records supply ``value``; judged
 records supply compliance/warmth and optionally refused/full_compliance_rate.
 Records are keyed by (model, template, group, sample); latest success wins.
 Templates require id, family, measure and sign, and should additionally supply

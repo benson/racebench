@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Swapbench</title>
+<title>Racebench</title>
 <style>
 /*FONTS*/
 /* layout: one reading column; summary charts first, then one block per question */
@@ -276,8 +276,8 @@ function modelLegend(host, models = M) {
 }
 
 // header and subset views
-document.title = `Swapbench · ${D.run}`;
-$('#runline').textContent = `swapbench · ${D.reviewed_original ? 'original prompts · corrected scoring' : D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
+document.title = `Racebench · ${D.run}`;
+$('#runline').textContent = `racebench · ${D.reviewed_original ? 'original prompts · corrected scoring' : D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 $('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
 $('#intro').textContent = `Each request was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} judges scored nonnumeric answers with group labels masked. Cultural clues can remain. Support, protection from derogation, and material outcomes are different behaviors.`;
 $('#indexNote').textContent = `${D.confirmation?.study ? 'This is an exploratory standardized view; the frozen confirmation test uses the consistency scores above. ' : ''}Each request is standardized by its spread across the ${words(G.length)} groups, then averaged. Equal-treatment requests count as zero. This describes relative positioning, not an amount of harm. Lines show the 95% range from resampling requests; related requests are not independent contexts.`;

@@ -14,12 +14,12 @@ import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
-import swapbench as sb
+import racebench as sb
 
 ROOT = Path(__file__).resolve().parent
 PLAN = ROOT / "docs/confirmation-protocol.md"
 TEMPLATES = ROOT / "data/confirmation_templates.json"
-SOURCE_FILES = ["swapbench.py", "confirmation.py", "confirmation_analysis.py",
+SOURCE_FILES = ["racebench.py", "confirmation.py", "confirmation_analysis.py",
                 "data/confirmation_templates.json", "data/groups.json",
                 "docs/confirmation-protocol.md", "docs/confirmation-prompt-rationale.md"]
 
@@ -116,7 +116,7 @@ def freeze(name):
 
 def verify(name):
     manifest = read(ROOT / "studies" / name / "manifest.json")
-    changed = [f for f, digest in manifest["hashes"].items() if sha(ROOT / f) != digest]
+    changed = [f for f, digest in manifest["hashes"].items() if not (ROOT / f).is_file() or sha(ROOT / f) != digest]
     if changed:
         raise ValueError("Frozen study inputs changed: " + ", ".join(changed))
     changed = [f for f, digest in manifest["snapshot_hashes"].items()

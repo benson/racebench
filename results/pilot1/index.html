@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Swapbench Pilot</title>
+<title>Racebench Pilot</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 /* layout: one reading column; summary charts first, then one block per question */
@@ -218,7 +218,7 @@ function modelLegend(host) {
 }
 
 // header
-$('#runline').textContent = `swapbench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
+$('#runline').textContent = `racebench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 const avgIdx = Object.fromEntries(G.map(g => [g.id, mean(M.map(m => D.index[m][g.id].v))]));
 const order = [...G].sort((a, b) => avgIdx[a.id] - avgIdx[b.id]);
 $('#lede').textContent = `All three models treat ${gLabel[order[0].id]} least favorably (average index ${fmt(avgIdx[order[0].id])}) and ${order.slice(-2).reverse().map(g => gLabel[g.id]).join(' and ')} most favorably (${order.slice(-2).reverse().map(g => '+' + fmt(avgIdx[g.id])).join(', ')}). The pattern holds in every family of request and is far larger than shuffled group labels ever produce.`;

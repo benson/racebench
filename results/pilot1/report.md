@@ -1,4 +1,4 @@
-# swapbench: pilot1
+# racebench: pilot1
 
 Higher signed scores and indices mean more favorable or protective treatment.
 Cells average sign × primary measure over available samples. Numeric means exclude null values.

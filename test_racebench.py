@@ -10,7 +10,7 @@ import threading
 import unittest
 from unittest.mock import patch
 
-import swapbench as sb
+import racebench as sb
 import build_page as bp
 
 

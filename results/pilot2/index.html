@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Swapbench</title>
+<title>Racebench</title>
 <style>
 /* Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -366,8 +366,8 @@ function modelLegend(host, models = M) {
 }
 
 // header and subset views
-document.title = `Swapbench · ${D.run}`;
-$('#runline').textContent = `swapbench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
+document.title = `Racebench · ${D.run}`;
+$('#runline').textContent = `racebench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 $('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
 $('#intro').textContent = `Each of ${D.templates.length} requests was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} ${D.judges.length === 1 ? 'judge' : 'judges'} scored the answers with every group name blanked out. Every score is oriented so that higher means more favorable or more protective treatment of the group named.`;
 $('#indexNote').textContent = `The favorability index: for each request, how far a group's score sits from the average of all ${words(G.length)} groups on that same request, averaged over the selected requests. Zero means treated like the average group. Lines show the 95% range from resampling requests.`;

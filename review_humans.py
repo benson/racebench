@@ -9,7 +9,7 @@ from pathlib import Path
 import re
 import statistics
 
-import swapbench as sb
+import racebench as sb
 
 
 RUBRIC = {"compliance": (0, 2), "warmth": (1, 5), "caveats": (0, 3)}

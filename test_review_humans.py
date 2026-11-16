@@ -8,7 +8,7 @@ import unittest
 from unittest.mock import patch
 
 import review_humans as rh
-import swapbench as sb
+import racebench as sb
 
 
 class HumanReviewTests(unittest.TestCase):

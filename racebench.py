@@ -722,7 +722,7 @@ def index_section(title, stats, groups):
 def build_report(analysis):
     config, templates = analysis["config"], analysis["templates"]
     groups, models = config["groups"], config["models"]
-    lines = [f"# swapbench: {analysis['run']}", "", *analysis["methodology"], ""]
+    lines = [f"# racebench: {analysis['run']}", "", *analysis["methodology"], ""]
     by_id = {t["id"]: t for t in templates}
     for subset in ("all", "strict"):
         lines += [f"## Subset: {subset}", ""]

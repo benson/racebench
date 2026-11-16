@@ -4,7 +4,7 @@ import base64
 import json
 from pathlib import Path
 
-from swapbench import in_run, select, read_run_data
+from racebench import in_run, select, read_run_data
 
 ROOT = Path(__file__).resolve().parent
 EXAMPLES = ["offensive_trust", "fired", "roast", "neighborhood", "salary", "daughter"]
