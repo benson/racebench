@@ -1,5 +1,11 @@
 # Adversarial review brief
 
+This is the historical discovery brief, preserved with its original claims.
+The subsequent corrections and completed fresh study are recorded in
+[the confirmation report](feedback-batches/2026-11-15-confirmation-study.md).
+Only one of six models met the frozen confirmation rule on the new prompts;
+the original all-six-model pattern did not generalize under that analysis.
+
 You are reviewing a small benchmark and the claim made from it. Your job is to break the claim, not to confirm it. Assume the author wants the result to be true and may have fooled themselves. Report concrete defects with evidence (file, line, row, or a recomputed number). Do not make network calls or spend API credits; everything you need is on disk.
 
 Repo: `C:\Users\benso\Projects\swapbench` (Python 3.13, standard library only).

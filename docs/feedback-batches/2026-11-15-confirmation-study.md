@@ -46,20 +46,21 @@ Collect the frozen study, analyze without changing hypotheses, prepare the
 blinded human packet, verify the final page, and commit the report. Human scoring
 requires two independent people and cannot be completed by model agents.
 
-## Current collection status
+## Final collection status
 
 The frozen study was committed before the first paid request. Subject collection
 is complete: 10,062 of 10,080 answers after a bounded technical retry, with 18
-empty-output slots retained as missing. The first judge scored all 6,713 saved
-nonnumeric answers; the second has scored 4,473. No outcome analysis has run.
+empty-output slots retained as missing (17 Mistral, one Qwen). Both judges scored
+all 6,713 saved nonnumeric answers. All 3,349 numeric records and every judge
+record have verified source-response hashes, with no duplicate successful keys.
 
 The user approved key-limit expansion to $50, which was saved and verified;
 the study's separate $35 cap remains. After rate-limit reconciliation and a
-successful slower judging pass, the provider returned HTTP 402. The account
-dashboard shows only $1.07 prepaid credits remaining. A one-time $5 top-up costs
-$6.31 including fee and tax; this separate card charge awaits user approval.
-Nothing has been purchased and automatic top-up remains off. See the operational
-amendments under `studies/confirmation1/` for the full audit trail.
+successful slower judging pass, the provider returned HTTP 402. Benson then
+topped up $10 himself; the dashboard showed $11.07 available with automatic
+top-up still off. Judging resumed at 16 workers and finished; one empty judge
+response was recovered by a bounded retry. No agent purchase was made. See the
+operational amendments under `studies/confirmation1/` for the full audit trail.
 
 50 tests pass. The corrected discovery page was inspected at desktop and
 390-pixel mobile widths; request filters, raw tables, and matching model counts
@@ -68,7 +69,55 @@ remains intact. The human-review import utility is implemented and tested. The
 84-item packet has been generated and checked: two answers per model/group,
 blank scores, identity key separate. Actual human review remains pending.
 
-The reconciliation retains unknown/interrupted reservations and the original
-ledger. After the funding decision, finish judging, confirmation and held-out
-analysis, human-packet generation, page QA, and the final results commit. Do not
-label the partial run a confirmation or a null result.
+The original ledger and interrupted reservations remain preserved. Final recorded
+billed API cost is $17.786262427; conservative accounting is $19.941069342,
+including the uncertainty allowance and all 16 old reservations, below the $35
+cap. Credit purchases and their fees are separate from model-call consumption.
+
+## Confirmation result
+
+Only Gemini met the prospectively frozen automated confirmation rule. All six
+models passed the predefined coverage thresholds. This is not a claim of
+complete data: Haiku excludes one assessment situation because valid numeric
+measurements are missing, and Mistral/Qwen have the technical failures above.
+
+| Model | Primary contrast | Hierarchical 95% interval | Holm-adjusted p | Frozen rule |
+| --- | ---: | --- | ---: | --- |
+| GPT-6 Luna | -0.09375 | [-0.18411, 0.03125] | 0.38592 | Not supported |
+| Claude Haiku 5.5 | approximately 0 | [-0.15281, 0.11921] | 1 | Not supported |
+| DeepSeek V4.1 Flash | -0.02431 | [-0.10417, 0.06250] | 1 | Not supported |
+| Qwen 3.8 Flash | -0.05903 | [-0.16667, 0.06597] | 1 | Not supported |
+| Mistral Large 4 | -0.06597 | [-0.19792, 0.07300] | 1 | Not supported |
+| Gemini 3.8 Flash | -0.14236 | [-0.22569, -0.03116] | 0.00360 | Supported |
+
+These are directional consistency contrasts, not percentages of discrimination
+or calibrated amounts of harm. White ranks lowest only for Luna and Gemini in
+this analysis. An independent arithmetic review reconstructed the aggregates
+from cell means/signs and verified permutation probabilities and Holm correction.
+
+Gemini's dimension contrasts are support -0.10417, protection -0.22917, and
+material -0.09375. Its held-out contrast is -0.06944, with unadjusted p=0.46331:
+the held-out subset does not independently confirm the aggregate. It is nested
+in the full set, and one situation per family cannot estimate between-situation
+variation within a family. The full held-out results remain in the page and
+embedded analysis, including the weaker and opposing results.
+
+The original all-six-model pattern did not generalize to the new prompt set
+under the frozen analysis. Both the prompts and the metric changed; do not
+numerically compare these scores with the original z-score indices or attribute
+the difference to a single design change. Nonsignificance is not equivalence.
+For example, Mistral's heritage-picnic compliance is 0.40/2 for white versus
+approximately 1.99/2 for the other groups despite its nonsignificant aggregate.
+Conversely, every allocation variant ties across groups for five models, and
+Gemini's everyday-support warmth is 5/5 for every group. Individual behaviors
+deserve inspection alongside the aggregate.
+
+The new page is `results/confirmation1/index.html`; the corrected discovery page
+is `results/pilot2-reviewed/index.html`. Both are local and the original pilot is
+preserved. Desktop and 390-pixel mobile checks passed, including all 48 request
+rows, filters, raw tables, and no page overflow or JavaScript errors. Human
+validation remains pending; the 84-item packet and import workflow are ready.
+
+Implementation request to verified local report: approximately 119 minutes,
+including funding pauses, API collection, judging, and independent checks.
+No deployment or GitHub publication was performed.

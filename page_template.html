@@ -226,7 +226,7 @@ const MC = M.map(color);
 const short = m => m.split('/').pop().split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ').replace('Gpt ', 'GPT-').replace('Deepseek', 'DeepSeek').replace('Mistral Large 4 0', 'Mistral Large 4').replace('Qwen3.8 ', 'Qwen 3.8 ');
 const gLabel = Object.fromEntries(G.map(g => [g.id, g.label]));
 const FAM = { celebrate: 'Celebrate', humor: 'Humor', critique: 'Critique', ingroup: 'In-group preference', victim: 'Victim', rating: 'Ratings', decision: 'Decisions', celebration: 'Celebration', everyday_support: 'Everyday support', derogation: 'Derogation', allocation: 'Allocation', assessment: 'Assessment' };
-const fmt = (v, d = 2) => v == null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(d));
+const fmt = (v, d = 2) => v == null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (Math.abs(v) < .5 * 10 ** -d ? 0 : v).toFixed(d));
 const mean = a => { a = a.filter(x => x != null); return a.length ? a.reduce((s, x) => s + x, 0) / a.length : null; };
 const words = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
 
@@ -280,7 +280,7 @@ document.title = `Swapbench · ${D.run}`;
 $('#runline').textContent = `swapbench · ${D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 $('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
 $('#intro').textContent = `Each request was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} judges scored nonnumeric answers with group labels masked. Cultural clues can remain. Support, protection from derogation, and material outcomes are different behaviors.`;
-$('#indexNote').textContent = `Each request is standardized by its spread across the ${words(G.length)} groups, then averaged. Equal-treatment requests count as zero. This describes relative positioning, not an amount of harm. Lines show the 95% range from resampling requests; related requests are not independent contexts.`;
+$('#indexNote').textContent = `${D.confirmation?.study ? 'This is an exploratory standardized view; the frozen confirmation test uses the consistency scores above. ' : ''}Each request is standardized by its spread across the ${words(G.length)} groups, then averaged. Equal-treatment requests count as zero. This describes relative positioning, not an amount of harm. Lines show the 95% range from resampling requests; related requests are not independent contexts.`;
 modelLegend($('#modelLegend')); modelLegend($('#modelLegend2'));
 document.querySelectorAll('.statsNote').forEach(n => { n.textContent = "Permutation count: shuffles producing at least this much spread, with labels shuffled within each request. Zero observed exceedances is not zero probability. Consistency: Kendall's W; 1 means identical rankings."; });
 let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
@@ -524,10 +524,11 @@ if (D.confirmation) {
   }
   if (D.confirmation.study) {
     const decisionTable = el('table', { class: 'plain' });
-    decisionTable.append(el('tr', {}, ...['Model', 'Primary contrast', 'Holm-adjusted p', 'Frozen rule', 'Held-out contrast'].map(text => el('th', { text }))));
+    decisionTable.append(el('tr', {}, ...['Model', 'Primary contrast [95% interval]', 'Holm-adjusted p', 'Frozen rule', 'Held-out contrast', 'Held-out p (unadjusted)'].map(text => el('th', { text }))));
     for (const m of M) {
       const r = D.confirmation.models[m], held = D.confirmation.held_out.models[m];
-      decisionTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: fmt(r.aggregate.primary.white_vs_others) }), el('td', { text: fmt(r.decision.holm_p, 4) }), el('td', { text: r.decision.status }), el('td', { text: fmt(held.aggregate.primary.white_vs_others) })));
+      const ci = r.aggregate.bootstrap.primary.white_vs_others;
+      decisionTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${fmt(r.aggregate.primary.white_vs_others)} [${fmt(ci?.[0])}, ${fmt(ci?.[1])}]` }), el('td', { text: fmt(r.decision.holm_p, 4) }), el('td', { text: r.decision.status }), el('td', { text: fmt(held.aggregate.primary.white_vs_others) }), el('td', { text: fmt(held.aggregate.permutation.two_sided_p, 4) })));
     }
     $('#dimensionsSection').append(el('div', { class: 'scroll' }, decisionTable));
     $('#confirmationDecision').textContent = 'The six aggregate tests use family-block permutations and Holm correction. Held-out results are secondary and nested in the full result. Human validation is pending; the blinded review packet is available beside this page.';
