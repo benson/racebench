@@ -239,3 +239,11 @@ model answers, analysis data, and internal identifiers are unchanged.
 
 Verified rendered copy, state-control headings, chart-row selection, question
 filtering, and desktop/phone layout without overflow or browser errors.
+
+## Remove optional question ordering
+
+Benson requested removing the Order dropdown. Questions now always retain their
+original order within the chosen type. Removed the unused ranking helper,
+associated styles, and explanatory paragraph. Verified original ordering in
+both desktop and phone selectors, filtering and selection, and no page errors
+or overflow.

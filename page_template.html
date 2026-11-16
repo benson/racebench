@@ -143,8 +143,6 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .range-ends span:nth-child(2):not(:last-child) { text-align: center }
 .range-ends span:last-child { text-align: right }
 .range-question { font-size: 14px; color: var(--ink2) }
-.question-order { flex: 1 1 250px; max-width: 100% }
-.request-list .difference-count { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 3px }
 .example .sample-text { font-size: 13px; line-height: 1.55; max-height: 160px }
 .answer-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
 .example-answers { display: flex; flex-direction: column; gap: 10px }
@@ -249,7 +247,6 @@ a { color: inherit; text-underline-offset: 3px }
     <div class="browser-controls">
       <label class="field">Question type<select id="familySelect"></select></label>
       <label class="field">Model<select id="requestModel"></select></label>
-      <label class="field question-order">Order<select id="questionOrder"><option value="original">Original order</option><option value="consistent">Most consistent White–Black gaps</option></select></label>
       <label class="field mobile-request">Question<select id="requestSelect"></select></label>
       <span class="request-status" id="requestCount" role="status"></span>
     </div>
@@ -295,7 +292,6 @@ a { color: inherit; text-underline-offset: 3px }
       <p id="methodScope"></p>
       <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after race labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every race; each model has equal weight. Exact counts and refusals are available in the details.</p>
       <p id="exampleTestMethod" hidden>Each featured example tests differences across all seven races, pooling the same models as its chart. It accounts for selecting the largest race gap and adjusts for all inspected questions. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
-      <p>The optional White–Black ordering counts models that favor the same race, using the signed scores. It ranks by the number of agreeing models, then their share of comparable models; ties keep the original question order. It measures consistency, not the size of a gap. Missing scores are excluded.</p>
       <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of races.</p>
       <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. The ratings of written answers have not been independently checked by human reviewers.</p>
       <p class="small">A separate follow-up changed the task mix and added explicit constraints; its aggregate test was supported in one of six models. It is not pooled with this original set. <a href="https://github.com/benson/racebench/blob/main/docs/feedback-batches/2026-11-15-confirmation-study.md">Study history and analysis details</a></p>
@@ -593,18 +589,6 @@ function rangeChart(t, values, groups = G, onGroup = null) {
   host.append(el('div', { class: 'range-ends' }, el('span', { text: `${range.low} (${range.lo})` }), range.middle ? el('span', { text: range.middle }) : null, el('span', { text: `${range.high} (${range.hi})` })));
   return host;
 }
-function differenceSummary(t) {
-  let white = 0, black = 0, ties = 0;
-  for (const m of M) {
-    const a = D.cells[m]?.[t.id]?.white?.signed, b = D.cells[m]?.[t.id]?.black?.signed;
-    if (a == null || b == null) continue;
-    if (Math.abs(a - b) < 1e-9) ties++; else if (a > b) white++; else black++;
-  }
-  const valid = white + black + ties, count = Math.max(white, black);
-  const text = !valid ? 'No comparable scores' : !count ? `${ties}/${valid} tied` : white === black ? `${white}/${valid} each way` : `${count}/${valid} favor ${black > white ? 'Black' : 'White'}`;
-  return {valid, count, share: valid ? count / valid : 0, text};
-}
-let questionOrder = 'original';
 function valueText(t, value) {
   if (value == null) return '—';
   return ['salary', 'bail', 'donation'].includes(t.id) ? '$' + Math.round(value).toLocaleString('en-US') : fmt(value, 1);
@@ -766,21 +750,16 @@ function drawQuestion() {
 }
 function drawQuestions() {
   const items = D.templates.filter(t => fam === 'all' || t.family === fam);
-  if (questionOrder === 'consistent') items.sort((a, b) => {
-    const x = differenceSummary(a), y = differenceSummary(b);
-    return y.count - x.count || y.share - x.share;
-  });
   if (!items.some(t => t.id === selectedId)) selectedId = items[0]?.id;
   const list = $('#requestList'), savedScroll = list.scrollTop;
   list.replaceChildren(); let lastFamily;
   for (const t of items) {
-    if (questionOrder === 'original' && t.family !== lastFamily) { list.append(el('span', { class: 'list-family', text: FAM[t.family] })); lastFamily = t.family; }
+    if (t.family !== lastFamily) { list.append(el('span', { class: 'list-family', text: FAM[t.family] })); lastFamily = t.family; }
     const button = el('button', { type: 'button', 'data-request': t.id, 'aria-current': String(t.id === selectedId), text: questionLabel(t), onclick: () => selectQuestion(t.id) });
-    if (questionOrder === 'consistent') button.append(el('span', { class: 'difference-count', text: differenceSummary(t).text }));
     list.append(button);
   }
   list.scrollTop = savedScroll;
-  $('#requestSelect').replaceChildren(...items.map(t => el('option', { value: t.id, text: questionLabel(t) + (questionOrder === 'consistent' ? ` · ${differenceSummary(t).text}` : '') })));
+  $('#requestSelect').replaceChildren(...items.map(t => el('option', { value: t.id, text: questionLabel(t) })));
   $('#requestSelect').value = selectedId || '';
   $('#requestCount').textContent = `${items.length} ${items.length === 1 ? 'question' : 'questions'}`;
   drawQuestion();
@@ -796,7 +775,6 @@ $('#familySelect').addEventListener('change', e => { fam = e.target.value; $('#r
 $('#requestModel').replaceChildren(...M.map(m => el('option', { value: m, text: short(m) })));
 $('#requestModel').addEventListener('change', e => { requestModel = e.target.value; drawQuestion(); });
 $('#requestSelect').addEventListener('change', e => selectQuestion(e.target.value));
-$('#questionOrder').addEventListener('change', e => { questionOrder = e.target.value; $('#requestList').scrollTop = 0; drawQuestions(); });
 drawSubset(); drawExamples(); drawQuestions();
 
 if (D.confirmation) {
