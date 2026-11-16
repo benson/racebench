@@ -17,7 +17,7 @@ def key_state():
     return {k: data.get(k) for k in ("usage", "limit", "limit_remaining")}
 
 
-def collect(name, budget=35, workers=64):
+def collect(name, budget=35, workers=64, judge_only=False):
     if not 1 <= workers <= 64:
         raise ValueError("Workers must be between 1 and 64")
     confirmation.verify(name)
@@ -30,6 +30,8 @@ def collect(name, budget=35, workers=64):
     def with_workers(argv):
         nonlocal installed
         argv = list(argv)
+        if judge_only and argv[0] == "run":
+            return 0
         if argv[0] in ("run", "judge"):
             argv[argv.index("--workers") + 1] = str(workers)
         if not installed:
@@ -53,6 +55,7 @@ def collect(name, budget=35, workers=64):
     with (directory / "collection-operations.jsonl").open("a", encoding="utf-8") as f:
         f.write(json.dumps({"requested_utc": datetime.now(timezone.utc).isoformat(),
                             "workers": workers, "budget": budget,
+                            "phase": "judge" if judge_only else "collect-and-judge",
                             "account_before": account,
                             "amendment": "studies/confirmation1/operational-amendment-1.md"}) + "\n")
     confirmation.sb.main = with_workers
@@ -67,5 +70,7 @@ if __name__ == "__main__":
     parser.add_argument("--name", default="confirmation1")
     parser.add_argument("--budget", type=float, default=35)
     parser.add_argument("--workers", type=int, default=64)
+    parser.add_argument("--judge-only", action="store_true",
+                        help="Score saved answers after bounded collection retries; retain missing slots")
     args = parser.parse_args()
-    raise SystemExit(collect(args.name, args.budget, args.workers))
+    raise SystemExit(collect(args.name, args.budget, args.workers, args.judge_only))
