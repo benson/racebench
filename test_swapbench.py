@@ -109,6 +109,16 @@ class TextTests(unittest.TestCase):
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_page_adjustment_handles_order_monotonicity_and_missing_test(self):
+        ps = {"a": .04, "b": .01, "c": None, "d": .03}
+        supplement = {"models": {m: {"aggregate": {"permutation": {"two_sided_p": p}}}
+                                  for m, p in ps.items()}}
+        result = bp.adjusted_comparisons(supplement, list(ps))
+        self.assertAlmostEqual(result["a"], .09)
+        self.assertAlmostEqual(result["b"], .04)
+        self.assertAlmostEqual(result["d"], .09)
+        self.assertIsNone(result["c"])
+
     def test_ties_count_as_zero_and_numeric_outcomes_have_denominators(self):
         templates = [{"id": name, "measure": "number", "sign": 1, "family": "new_family"}
                      for name in ("different", "tied")]

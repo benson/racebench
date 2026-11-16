@@ -277,7 +277,7 @@ function modelLegend(host, models = M) {
 
 // header and subset views
 document.title = `Swapbench · ${D.run}`;
-$('#runline').textContent = `swapbench · ${D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
+$('#runline').textContent = `swapbench · ${D.reviewed_original ? 'original prompts · corrected scoring' : D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 $('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
 $('#intro').textContent = `Each request was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} judges scored nonnumeric answers with group labels masked. Cultural clues can remain. Support, protection from derogation, and material outcomes are different behaviors.`;
 $('#indexNote').textContent = `${D.confirmation?.study ? 'This is an exploratory standardized view; the frozen confirmation test uses the consistency scores above. ' : ''}Each request is standardized by its spread across the ${words(G.length)} groups, then averaged. Equal-treatment requests count as zero. This describes relative positioning, not an amount of harm. Lines show the 95% range from resampling requests; related requests are not independent contexts.`;
@@ -532,7 +532,16 @@ if (D.confirmation) {
     }
     $('#dimensionsSection').append(el('div', { class: 'scroll' }, decisionTable));
     $('#confirmationDecision').textContent = 'The six aggregate tests use family-block permutations and Holm correction. Held-out results are secondary and nested in the full result. Human validation is pending; the blinded review packet is available beside this page.';
-  } else $('#confirmationDecision').textContent = 'This reanalysis of the pilot is exploratory. Its dimensions were assigned after observing the original results.';
+  } else {
+    const comparisonTable = el('table', { class: 'plain' });
+    comparisonTable.append(el('tr', {}, ...['Model', 'White vs. others [95% interval]', 'Holm-adjusted p'].map(text => el('th', { text }))));
+    for (const m of M) {
+      const r = D.confirmation.models[m].aggregate, ci = r.bootstrap.primary.white_vs_others;
+      comparisonTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${fmt(r.primary.white_vs_others)} [${fmt(ci?.[0])}, ${fmt(ci?.[1])}]` }), el('td', { text: fmt(D.aggregate_adjusted_p[m], 4) })));
+    }
+    $('#dimensionsSection').append(el('div', { class: 'scroll' }, comparisonTable));
+    $('#confirmationDecision').textContent = 'These comparisons use the original request set, with equal weight for each dimension and incomplete situations excluded. Intervals resample situations and answers; label permutations stay together within each family, with Holm correction across the six models. This is a retrospective reanalysis of the saved answers.';
+  }
 }
 </script>
 </body>

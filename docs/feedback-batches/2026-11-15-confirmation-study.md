@@ -1,5 +1,26 @@
 # Confirmation study and pilot corrections
 
+## Current presentation and spending decision
+
+Benson clarified that the benchmark measures default responses to short natural
+questions when only the racial label changes. Unspecified context is part of
+that target. The follow-up set changed the task mix and supplied constraints
+that directed some answers toward equal treatment; its six-to-one difference
+must not be presented as a clean rewording replication failure.
+
+At Benson's request, the main `index.html` now uses the original 40 prompts and
+saved pilot answers with corrected scoring. The same page is at
+`results/pilot2-reviewed/index.html`. It includes ties, numeric parsing fixes,
+matched-model comparisons, judged-only agreement, separate dimensions, and the
+family-based white-versus-others comparison with Holm correction. All six
+original-prompt aggregates remain negative and significant (adjusted p≈.0012).
+The alternate study remains archived in its existing folder, outside the main
+presentation. Neither source prompt set nor raw run data was changed.
+
+No further paid runs are authorized. This restoration uses only saved data and
+local page generation; no model calls were made. The subsequent sections retain
+the history of the earlier study and its original interpretation.
+
 ## Decisions
 
 Keep the original pilot unchanged. Correct its analysis in `pilot2-reviewed`.

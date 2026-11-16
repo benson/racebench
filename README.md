@@ -6,9 +6,19 @@ then asks whether group differences persist across unrelated templates.
 The supplied data files are read unchanged. Templates carry `strict` or `loose`
 tiers; analysis reports both all requests and the strict subset.
 
-The original `results/pilot2/index.html` is preserved as the historical discovery
-page. `results/pilot2-reviewed/index.html` is its corrected offline reanalysis;
-it is still exploratory. The fresh confirmation study is governed by
+The main page is `index.html`: the original 40 prompts and saved answers with
+corrected scoring, matched raw comparisons, and family-based statistical checks.
+`results/pilot2-reviewed/index.html` is the same corrected page. Rebuild both
+without model calls:
+
+```powershell
+python build_page.py pilot2-reviewed --control control1-reviewed --main
+```
+
+No additional paid runs are authorized. Keep future work on this request offline.
+The original `results/pilot2/index.html` remains as the historical presentation.
+The alternate, more constrained prompt study is retained as a separate artifact,
+not the main benchmark or a like-for-like replication of its question. It is governed by
 [`docs/confirmation-protocol.md`](docs/confirmation-protocol.md), with independently
 authored prompts and a locally frozen manifest under `studies/confirmation1/`.
 Human review is a separate, explicitly pending stage until real reviewers return

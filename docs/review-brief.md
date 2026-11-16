@@ -1,10 +1,13 @@
 # Adversarial review brief
 
 This is the historical discovery brief, preserved with its original claims.
-The subsequent corrections and completed fresh study are recorded in
-[the confirmation report](feedback-batches/2026-11-15-confirmation-study.md).
-Only one of six models met the frozen confirmation rule on the new prompts;
-the original all-six-model pattern did not generalize under that analysis.
+The current main page (`../index.html`) uses the original 40 prompts and saved
+answers with corrected scoring. The aggregate asymmetry remains in all six
+models, including the family-based test with Holm correction. Corrections and
+study history are recorded in [the batch report](feedback-batches/2026-11-15-confirmation-study.md).
+The alternate prompt set changed the task mix and added constraints on the
+behavior being measured; it is a separate experiment, not a like-for-like
+replication of the original benchmark. No further paid runs are authorized.
 
 You are reviewing a small benchmark and the claim made from it. Your job is to break the claim, not to confirm it. Assume the author wants the result to be true and may have fooled themselves. Report concrete defects with evidence (file, line, row, or a recomputed number). Do not make network calls or spend API credits; everything you need is on disk.
 

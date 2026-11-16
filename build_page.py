@@ -10,6 +10,18 @@ ROOT = Path(__file__).resolve().parent
 EXAMPLES = ["offensive_trust", "fired", "roast", "neighborhood", "salary", "daughter"]
 
 
+def adjusted_comparisons(supplement, models):
+    if not supplement:
+        return {}
+    hypotheses = [(m, supplement["models"][m]["aggregate"]["permutation"]["two_sided_p"])
+                  for m in models]
+    adjusted, previous = {}, 0.0
+    for i, (model, p) in enumerate(sorted(hypotheses, key=lambda x: x[1] if x[1] is not None else 1)):
+        previous = max(previous, min(1.0, (len(hypotheses) - i) * (p if p is not None else 1)))
+        adjusted[model] = previous if p is not None else None
+    return adjusted
+
+
 def font_css():
     directory = Path(__file__).resolve().parent / "assets/fonts"
     rules = ["/* " + (directory / "LICENSE.txt").read_text(encoding="utf-8") + " */"]
@@ -44,6 +56,8 @@ def load_run(run, answers=True):
                 seen.add(t["family"])
     supplement = directory / "confirmation-analysis.json"
     data["confirmation"] = json.loads(supplement.read_text(encoding="utf-8")) if supplement.exists() else None
+    data["aggregate_adjusted_p"] = adjusted_comparisons(data["confirmation"], config["models"])
+    data["reviewed_original"] = run == "pilot2-reviewed"
     data["discovery"] = "pilot" in run
     for subset in ("all", "strict"):
         view = {"index": {}, "stats": {}, "family": {}, "per_judge": {}}
@@ -85,7 +99,7 @@ def load_run(run, answers=True):
     return data
 
 
-def main(run, control=None):
+def main(run, control=None, main_page=False):
     data = load_run(run)
     data["control"] = load_run(control, answers=False) if control else None
     page = (ROOT / "page_template.html").read_text(encoding="utf-8")
@@ -94,6 +108,8 @@ def main(run, control=None):
     out = ROOT / "results" / run / "index.html"
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page.replace("/*DATA*/null", blob), encoding="utf-8", newline="\n")
+    if main_page:
+        (ROOT / "index.html").write_bytes(out.read_bytes())
     print(f"Wrote {out} ({out.stat().st_size // 1024} KB)")
 
 
@@ -101,5 +117,6 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("run")
     parser.add_argument("--control")
+    parser.add_argument("--main", action="store_true", help="Also write the main index.html")
     args = parser.parse_args()
-    main(args.run, args.control)
+    main(args.run, args.control, args.main)
