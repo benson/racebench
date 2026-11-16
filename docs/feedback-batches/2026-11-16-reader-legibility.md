@@ -98,3 +98,15 @@ group/answer-column selections against the saved responses. Desktop and
 390-pixel phone layouts passed visual review with no horizontal overflow or
 JavaScript errors. Embedded study data is unchanged. Saved for local review;
 not deployed.
+
+## Evidence checks follow-up
+
+Benson requested the same statistical scrutiny for the other five examples and
+clear page labels, then asked whether significance alone was enough for this
+benchmark. The response-level analysis and review are recorded in
+`docs/example-analysis.md`. Four examples show group differences after an
+adjustment for all 40 inspected prompts; salary is inconclusive, and the
+daughter example has identical observed scores. The page labels these checks
+exploratory and keeps size, per-model consistency, assumptions, and limitations
+available alongside the statistical result. No claim of general benchmark
+validation or general bias is implied by the test.

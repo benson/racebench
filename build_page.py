@@ -2,6 +2,7 @@
 import argparse
 import base64
 import json
+import hashlib
 from pathlib import Path
 
 from racebench import in_run, select, read_run_data
@@ -34,7 +35,7 @@ def font_css():
     return "\n".join(rules)
 
 
-def load_run(run, answers=True):
+def load_run(run, answers=True, example_checks=True):
     directory = ROOT / "runs" / run
     config = json.loads((directory / "config.json").read_text(encoding="utf-8"))
     analysis = json.loads((directory / "analysis.json").read_text(encoding="utf-8"))
@@ -94,6 +95,15 @@ def load_run(run, answers=True):
                     continue
                 text = row["response"].strip()
                 data["answers"].setdefault(row["model"], {}).setdefault(row["template"], {})[row["group"]] = text
+    check_path = ROOT / "results" / run / "example-analysis.json"
+    if example_checks and check_path.exists():
+        checks = json.loads(check_path.read_text(encoding="utf-8"))
+        if checks["run"] != run or checks["family_size"] != len(data["templates"]):
+            raise ValueError("Example checks do not match this run")
+        for name, expected in checks["source_sha256"].items():
+            if hashlib.sha256((ROOT / name).read_text(encoding="utf-8").encode("utf-8")).hexdigest() != expected:
+                raise ValueError(f"Rerun example_analysis.py: source changed ({name})")
+        data["example_checks"] = checks
     return data
 
 

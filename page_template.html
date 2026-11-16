@@ -114,6 +114,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .detail-body h3 { margin-top: 8px }
 .example { display: flex; flex-direction: column; gap: 14px }
 .example .prompt { font-size: 15px }
+.example-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 14px }
 .answer-range { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 14px 12px; align-items: center; padding-top: 4px; font-size: 13px }
 .range-track { position: relative; height: 6px; margin-inline: 5px; border-radius: 3px; background: var(--grid) }
 .range-dot { position: absolute; width: 10px; height: 10px; top: -2px; margin-left: -5px; background: var(--ink); border-radius: 50% }
@@ -281,6 +282,7 @@ a { color: inherit; text-underline-offset: 3px }
     <details><summary>About this test</summary><div class="detail-body">
       <p id="methodScope"></p>
       <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after group labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every group; each model has equal weight. Exact counts and refusals are available in the details.</p>
+      <p id="exampleTestMethod" hidden>Each featured example has an exploratory test of differences across all seven groups, pooling the same models as its chart. It accounts for selecting the largest group gap and adjusts for all inspected questions. A significant result does not establish that every pair differs, that every model shows the effect, or that it generalizes to other prompts. An inconclusive result does not establish equality. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
       <p>The optional White–Black ordering counts models that favor the same group, using the signed scores. It ranks by the number of agreeing models, then their share of comparable models; ties keep the original question order. It measures consistency, not the size of a gap. Missing scores are excluded.</p>
       <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of groups.</p>
       <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. The ratings of written answers have not been independently checked by human reviewers.</p>
@@ -597,6 +599,7 @@ function valueChart(t, values, groups = G) {
   return host;
 }
 function drawExamples() {
+  $('#exampleTestMethod').hidden = !D.example_checks;
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
     const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), promptNode(t.prompt));
@@ -604,11 +607,27 @@ function drawExamples() {
     if (range?.question) card.append(el('p', { class: 'range-question', text: range.question }));
     card.append(el('span', { class: 'small', text: `Average of ${matched.length} models` }));
     card.append(rangeChart(t, values));
+    const check = D.example_checks?.results[id];
+    if (check?.status === 'available') {
+      const conclusion = check.spread === 0 ? 'Identical observed group scores' : check.significant ? 'Statistically significant group differences' : 'Group difference not established';
+      const p = check.adjusted_p < .001 ? `≈ ${check.adjusted_p.toFixed(4)}` : `= ${check.adjusted_p.toFixed(2)}`;
+      card.append(el('p', { class: 'example-evidence' }, el('strong', { text: conclusion }), el('span', { class: 'small', text: `Exploratory · adjusted p ${p}` })));
+    }
     card.append(el('p', { class: 'small', text: `${short(M[0])} · first saved answers` }), firstAnswers(t, M[0], groupA, groupB));
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
     const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
     G.forEach((g, i) => tb.append(el('tr', {}, el('td', { class: 'name', text: label(g.id) }), el('td', { text: valueText(t, values[i]) }), el('td', { text: `${matched.reduce((n, m) => n + D.cells[m][t.id][g.id].valid, 0)} / ${matched.length * D.samples}` }))));
     detail.append(el('div', { class: 'detail-body' }, el('div', { class: 'scroll' }, tb), el('p', { class: 'small', text: `Average of ${matched.length} models, with equal weight per model. Only models with a valid score for every group enter these averages. Warmth and compliance are rated by the two model judges; numeric answers come directly from the model.` })));
+    if (check?.status === 'available') {
+      const body = detail.querySelector('.detail-body');
+      if (check.spread > 0) {
+        const amount = ['salary', 'bail', 'donation'].includes(t.id) ? valueText(t, check.spread) : `${fmt(check.spread, 2)} points`;
+        body.append(el('p', { class: 'small', text: `Largest observed average gap: ${amount}, with ${label(check.highest)} above ${label(check.lowest)} on this scale. ${check.same_direction} of ${check.models.length} models show that direction; ${check.tied} tie and ${check.opposite_direction} go the other way.` }));
+      }
+      body.append(el('p', { class: 'small', text: `The test shuffles usable response scores between groups within each model, preserving answer counts. The two judge scores for an answer are averaged before testing. ${check.exceedances.toLocaleString('en-US')} of ${check.draws.toLocaleString('en-US')} shuffles produced a largest group gap at least this large. The p-value uses a finite-simulation correction, then a Bonferroni adjustment for ${D.example_checks.family_size} inspected questions.` }));
+      body.append(el('p', { class: 'small', text: `This is a test across all seven groups, not a separate significance test of the selected answer pair. It concerns usable scored answers to this prompt in these ${check.models.length} models. Statistical significance does not measure the size or importance of a difference, or validate the judges' ratings.` }));
+      if (!check.significant) body.append(el('p', { class: 'small', text: check.spread === 0 ? 'The saved scores are identical across groups. This does not prove the model responses are equivalent in every respect.' : `Before the adjustment across questions, p ≈ ${check.p.toFixed(2)}. The available data do not clearly distinguish this pooled gap from response variation; that does not prove the true difference is zero.` }));
+    }
     card.append(detail, el('button', { class: 'text-button', type: 'button', text: 'Explore this question', onclick: () => {
       fam = 'all'; $('#familySelect').value = fam; selectedId = t.id; drawQuestions();
       $('#requestSection').scrollIntoView({ block: 'start' }); $('#questionTitle').focus({ preventScroll: true });
