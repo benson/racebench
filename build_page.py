@@ -4,10 +4,10 @@ import base64
 import json
 from pathlib import Path
 
-from swapbench import DEFAULT_GROUPS, in_run, select
+from swapbench import in_run, select, read_run_data
 
 ROOT = Path(__file__).resolve().parent
-EXAMPLES = ["offensive_trust", "fired", "comedian", "roast", "neighborhood", "salary"]
+EXAMPLES = ["offensive_trust", "fired", "roast", "neighborhood", "salary", "daughter"]
 
 
 def font_css():
@@ -28,13 +28,23 @@ def load_run(run, answers=True):
     analysis = json.loads((directory / "analysis.json").read_text(encoding="utf-8"))
     if config != analysis["config"]:
         raise ValueError(f"Run analyze again for {run}: its config has changed")
-    groups = json.loads((ROOT / config.get("groups_file", DEFAULT_GROUPS)).read_text(encoding="utf-8"))
+    _, groups = read_run_data(directory, config)
     groups = select(groups, ",".join(config["groups"]))
     data = {"run": run, "models": config["models"], "samples": config["samples"],
             "judges": analysis["judges"], "groups": [{"id": g["id"], "label": g["adj"]} for g in groups],
             "templates": analysis["templates"], "families": analysis["families"],
             "subsets": {}, "cells": {}, "answers": {}, "agreement": analysis["agreement"]}
     data["examples"] = [tid for tid in EXAMPLES if any(t["id"] == tid for t in data["templates"])]
+    if not data["examples"]:
+        # First authored situation per family, selected without inspecting outcomes.
+        seen = set()
+        for t in data["templates"]:
+            if t["family"] not in seen:
+                data["examples"].append(t["id"])
+                seen.add(t["family"])
+    supplement = directory / "confirmation-analysis.json"
+    data["confirmation"] = json.loads(supplement.read_text(encoding="utf-8")) if supplement.exists() else None
+    data["discovery"] = "pilot" in run
     for subset in ("all", "strict"):
         view = {"index": {}, "stats": {}, "family": {}, "per_judge": {}}
         for model in config["models"]:
@@ -43,13 +53,16 @@ def load_run(run, answers=True):
             view["index"][model] = {g: {"v": v, "lo": ci[0], "hi": ci[1]}
                                      for g, v, ci in zip(config["groups"], stats["index"], stats["ci"])}
             view["stats"][model] = {"W": stats["w"], "exceed": stats["exceedances"], "draws": stats["draws"],
-                                    "used": len(stats["included"]), "total": len(stats["status"])}
+                                    "used": len(stats["included"]), "total": len(stats["status"]),
+                                    "tied": stats.get("tied_count", 0)}
             view["family"][model] = {family: row["index"] for family, row in stats["family"].items()}
             if subset == "all":
                 for cell in result["cells"]:
                     data["cells"].setdefault(model, {}).setdefault(cell["template"], {})[cell["group"]] = {
                         short: cell[long] for short, long in (("n", "n"), ("raw", "raw_mean"),
-                        ("signed", "signed_mean"), ("z", "z"), ("ref", "refusal_rate"), ("cav", "mean_caveats"))}
+                        ("signed", "signed_mean"), ("z", "z"), ("ref", "refusal_rate"), ("cav", "mean_caveats"),
+                        ("valid", "valid_n"), ("invalid", "invalid_n"), ("declined", "declined_n"),
+                        ("full", "full_compliance_rate"))}
         for judge, results in analysis["per_judge"].items():
             view["per_judge"][judge] = {model: dict(zip(config["groups"], results[model][subset]["index"]))
                                        for model in config["models"]}

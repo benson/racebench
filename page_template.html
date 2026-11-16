@@ -47,7 +47,7 @@ p { margin: 0; max-width: 68ch }
 .sw.sq { border-radius: 2px }
 .examples { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
 .raw-bars { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; margin-top: auto }
-.raw-track, .raw-axis { margin-right: 64px }
+.raw-track, .raw-axis { margin-right: 110px }
 .raw-bar { position: relative; height: 8px; background: var(--ink2); border-radius: 0 3px 3px 0 }
 .raw-value { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); padding-left: 6px; font-size: 12px; white-space: nowrap }
 .raw-axis { display: flex; justify-content: space-between; border-top: 1px solid var(--grid); padding-top: 4px; font: 11px var(--mono); color: var(--muted) }
@@ -132,8 +132,16 @@ ul { margin: 0; padding-left: 18px; max-width: 68ch; display: flex; flex-directi
     <div class="examples" id="examples"></div>
   </section>
 
+  <section id="dimensionsSection" hidden>
+    <h2>Support, protection, and material outcomes</h2>
+    <p class="sub" id="dimensionsNote"></p>
+    <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
+    <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
+    <p class="small" id="confirmationDecision"></p>
+  </section>
+
   <section>
-    <h2>Overall treatment by group</h2>
+    <h2>Standardized scores by group</h2>
     <p class="sub" id="indexNote"></p>
     <div class="panel">
       <div class="legend" id="modelLegend"></div>
@@ -156,7 +164,7 @@ ul { margin: 0; padding-left: 18px; max-width: 68ch; display: flex; flex-directi
 
   <section>
     <h2>Does the direction hold across kinds of request?</h2>
-    <p class="sub">The same index, split into the seven families of request. If the differences were noise, a group's row would flip between blue and red from column to column.</p>
+    <p class="sub">The same index, split by request family. Compare the direction with the raw scores below; a consistent direction does not establish a large practical difference.</p>
     <div class="seg" id="heatSeg" role="group" aria-label="Model"></div>
     <div class="panel scroll">
       <table id="heat"></table>
@@ -217,7 +225,7 @@ const color = m => `var(--m${colorModels.indexOf(m) % 6 + 1})`;
 const MC = M.map(color);
 const short = m => m.split('/').pop().split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ').replace('Gpt ', 'GPT-').replace('Deepseek', 'DeepSeek').replace('Mistral Large 4 0', 'Mistral Large 4').replace('Qwen3.8 ', 'Qwen 3.8 ');
 const gLabel = Object.fromEntries(G.map(g => [g.id, g.label]));
-const FAM = { celebrate: 'Celebrate', humor: 'Humor', critique: 'Critique', ingroup: 'In-group preference', victim: 'Victim', rating: 'Ratings', decision: 'Decisions' };
+const FAM = { celebrate: 'Celebrate', humor: 'Humor', critique: 'Critique', ingroup: 'In-group preference', victim: 'Victim', rating: 'Ratings', decision: 'Decisions', celebration: 'Celebration', everyday_support: 'Everyday support', derogation: 'Derogation', allocation: 'Allocation', assessment: 'Assessment' };
 const fmt = (v, d = 2) => v == null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : v.toFixed(d));
 const mean = a => { a = a.filter(x => x != null); return a.length ? a.reduce((s, x) => s + x, 0) / a.length : null; };
 const words = n => ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'][n] || String(n);
@@ -269,12 +277,12 @@ function modelLegend(host, models = M) {
 
 // header and subset views
 document.title = `Swapbench · ${D.run}`;
-$('#runline').textContent = `swapbench · run ${D.run} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
+$('#runline').textContent = `swapbench · ${D.discovery ? 'exploratory discovery' : 'confirmation study'} · ${D.templates.length} requests × ${G.length} groups × ${M.length} models × ${D.samples} samples`;
 $('#title').textContent = `Same request, different race: how ${words(M.length)} ${M.length === 1 ? 'model treats' : 'models treat'} ${words(G.length)} groups`;
-$('#intro').textContent = `Each of ${D.templates.length} requests was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} ${D.judges.length === 1 ? 'judge' : 'judges'} scored the answers with every group name blanked out. Every score is oriented so that higher means more favorable or more protective treatment of the group named.`;
-$('#indexNote').textContent = `The favorability index: for each request, how far a group's score sits from the average of all ${words(G.length)} groups on that same request, averaged over the selected requests. Zero means treated like the average group. Lines show the 95% range from resampling requests.`;
+$('#intro').textContent = `Each request was sent with only the racial group swapped. ${words(D.judges.length).replace(/^./, c => c.toUpperCase())} judges scored nonnumeric answers with group labels masked. Cultural clues can remain. Support, protection from derogation, and material outcomes are different behaviors.`;
+$('#indexNote').textContent = `Each request is standardized by its spread across the ${words(G.length)} groups, then averaged. Equal-treatment requests count as zero. This describes relative positioning, not an amount of harm. Lines show the 95% range from resampling requests; related requests are not independent contexts.`;
 modelLegend($('#modelLegend')); modelLegend($('#modelLegend2'));
-document.querySelectorAll('.statsNote').forEach(n => { n.textContent = "Odds: how often shuffling the group labels within each request produced a spread at least this large. Consistency: Kendall's W, 1 means every request ranks the groups identically."; });
+document.querySelectorAll('.statsNote').forEach(n => { n.textContent = "Permutation count: shuffles producing at least this much spread, with labels shuffled within each request. Zero observed exceedances is not zero probability. Consistency: Kendall's W; 1 means identical rankings."; });
 let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
 const templatesIn = (data, tier) => data.templates.filter(t => tier === 'all' || t.tier === 'strict');
 const averages = (data, view) => Object.fromEntries(data.groups.map(g => [g.id, mean(data.models.map(m => view.index[m][g.id].v))]));
@@ -295,14 +303,19 @@ function drawIndex(host, data, view, groupOrder) {
   }) })), ...range, { zero: 0, zeroLabel: 'average group', dir: 1, count: data.models.length, colors: data.models.map(color) });
 }
 function drawStats(host, data, view) {
-  host.replaceChildren(el('tr', {}, ...['Model', 'Requests where groups were scored differently', 'Odds the pattern is chance', 'Consistency across requests (0 to 1)'].map(text => el('th', { text }))));
+  host.replaceChildren(el('tr', {}, ...['Model', 'Complete requests (ties retained)', 'Permutation exceedances', 'Consistency across requests (0 to 1)'].map(text => el('th', { text }))));
   for (const m of data.models) {
     const s = view.stats[m], n = s.draws.toLocaleString('en-US');
-    host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total}` }),
-      el('td', { text: s.exceed == null ? '—' : s.exceed === 0 ? `< 1 in ${n}` : `${s.exceed.toLocaleString('en-US')} in ${n}` }), el('td', { text: fmt(s.W) })));
+    host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total} · ${s.tied} tied` }),
+      el('td', { text: s.exceed == null ? '—' : `${s.exceed.toLocaleString('en-US')} of ${n}` }), el('td', { text: fmt(s.W) })));
   }
 }
 function drawLede() {
+  if (D.confirmation?.study) {
+    const supported = M.filter(m => D.confirmation.models[m]?.decision?.primary_supported).length;
+    $('#lede').textContent = `The predefined white-versus-other-groups comparison is supported in ${supported} of ${M.length} models. See the separate behaviors below; human validation is pending.`;
+    return;
+  }
   const available = order.filter(g => avgIdx[g.id] != null);
   if (!available.length) { $('#lede').textContent = 'No complete, nonconstant requests are available for this subset.'; return; }
   const low = available[0], high = available[available.length - 1];
@@ -360,7 +373,7 @@ function drawAgreement() {
   $('#judgeSection').hidden = D.judges.length < 2;
   if (D.judges.length < 2) return;
   const pair = D.agreement[subset][0], judges = pair?.judges || D.judges.slice(0, 2);
-  $('#judgeNote').textContent = `${judges.map(short).join(' and ')} each scored the same masked answers. The main results use the mean of the two.`;
+  $('#judgeNote').textContent = `${judges.map(short).join(' and ')} scored the same label-masked answers. These comparisons use judged requests only; shared numeric answers are excluded. Agreement is between two model judges, not human validation.`;
   const table = $('#judgeTable');
   table.replaceChildren(el('tr', {}, ...['Model', 'Answers scored by both', 'Same comply/refuse score', 'Warmth correlation', 'Caveat correlation', 'Group index correlation'].map(text => el('th', { text }))));
   for (const m of M) {
@@ -386,7 +399,7 @@ function drawSubset() {
     drawIndex($('#controlPlot'), c, v, ordered(c.groups, averages(c, v))); drawStats($('#controlTable'), c, v);
   }
 }
-seg($('#subsetSeg'), [['all', 'All requests'], ['strict', 'Strict only']], () => subset, v => { subset = v; drawSubset(); });
+seg($('#subsetSeg'), [['all', 'All requests'], ['strict', 'Strict only']], () => subset, v => { subset = v; drawSubset(); drawQuestions(); });
 
 // questions
 const MEASURE = {
@@ -405,20 +418,21 @@ function promptNode(p) {
   return n;
 }
 function drawExamples() {
-  $('#examplesNote').textContent = `${words(D.examples.length).replace(/^./, c => c.toUpperCase())} requests, answers averaged across the ${M.length} models. Raw scores, no index.`;
+  $('#examplesNote').textContent = `Raw examples, including ordinary cases. Each panel uses only models with a valid score for every group. Counts are valid answers; averages weight each matched model equally.`;
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), ms = MEASURE[t.measure];
-    const values = order.map(g => mean(M.map(m => D.cells[m]?.[id]?.[g.id]?.raw)));
+    const matched = M.filter(m => G.every(g => D.cells[m]?.[id]?.[g.id]?.raw != null));
+    const values = order.map(g => mean(matched.map(m => D.cells[m][id][g.id].raw)));
     const scale = t.prompt.match(/scale of (\d+) to (\d+)/);
     const [lo, hi] = ms[2] || [0, scale ? +scale[2] : Math.max(1, ...values.filter(v => v != null))];
     const bars = el('div', { class: 'raw-bars' });
     order.forEach((g, i) => {
       const v = values[i], width = v == null ? 0 : (v - lo) / (hi - lo) * 100;
       bars.append(el('div', { text: g.label }), el('div', { class: 'raw-track' },
-        el('div', { class: 'raw-bar', style: `width:${width}%` }, el('span', { class: 'raw-value num', text: fmt(v, 1) }))));
+        el('div', { class: 'raw-bar', style: `width:${width}%` }, el('span', { class: 'raw-value num', text: `${fmt(v, 1)} (n=${matched.reduce((sum, m) => sum + D.cells[m][id][g.id].valid, 0)})` }))));
     });
     bars.append(el('div'), el('div', { class: 'raw-axis' }, el('span', { text: fmt(lo, 0) }), el('span', { text: fmt(hi, Number.isInteger(hi) ? 0 : 1) })));
-    return el('div', { class: 'panel q' }, promptNode(t.prompt), el('p', { class: 'small', text: ms[1] }), bars);
+    return el('div', { class: 'panel q' }, promptNode(t.prompt), el('p', { class: 'small', text: `${ms[1]} · ${matched.length} of ${M.length} matched models` }), bars);
   }));
 }
 function question(t) {
@@ -447,8 +461,8 @@ function question(t) {
   nums.addEventListener('toggle', () => {
     if (nums.childElementCount > 1) return;
     const tb = el('table', { class: 'plain' });
-    tb.append(el('tr', {}, el('th', { text: 'Group' }), ...M.flatMap(m => [el('th', { text: short(m) }), el('th', { text: 'refused' }), ...(t.measure === 'number' ? [] : [el('th', { text: 'hedging 0–3' })])])));
-    for (const g of requestOrder) tb.append(el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }), ...M.flatMap(m => { const c = D.cells[m]?.[t.id]?.[g.id] || {}; return [el('td', { text: fmt(c.raw) }), el('td', { text: c.ref == null ? '—' : Math.round(c.ref * 100) + '%' }), ...(t.measure === 'number' ? [] : [el('td', { text: fmt(c.cav) })])]; })));
+    tb.append(el('tr', {}, el('th', { text: 'Group' }), ...M.flatMap(m => [el('th', { text: short(m) }), el('th', { text: 'valid / planned' }), el('th', { text: 'refused' }), ...(t.measure === 'number' ? [el('th', { text: 'invalid' })] : [el('th', { text: 'hedging 0–3' }), el('th', { text: 'fully complied' })])])));
+    for (const g of requestOrder) tb.append(el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }), ...M.flatMap(m => { const c = D.cells[m]?.[t.id]?.[g.id] || {}; return [el('td', { text: fmt(c.raw) }), el('td', { text: `${c.valid ?? 0} / ${D.samples}` }), el('td', { text: c.ref == null ? '—' : Math.round(c.ref * 100) + '%' }), ...(t.measure === 'number' ? [el('td', { text: String(c.invalid ?? 0) })] : [el('td', { text: fmt(c.cav) }), el('td', { text: c.full == null ? '—' : Math.round(c.full * 100) + '%' })])]; })));
     nums.append(el('div', { class: 'scroll', style: 'margin-top:10px' }, tb));
   }, { once: false });
   box.append(nums);
@@ -468,7 +482,7 @@ function question(t) {
   return box;
 }
 function drawQuestions() {
-  $('#questions').replaceChildren(...D.templates.filter(t => fam === 'all' || t.family === fam).map(question));
+  $('#questions').replaceChildren(...templatesIn(D, subset).filter(t => fam === 'all' || t.family === fam).map(question));
 }
 drawSubset();
 const requestOrder = order;
@@ -480,12 +494,45 @@ drawQuestions();
   `This is a pilot: ${D.samples} samples per request, group and model, on ${words(M.length)} models. Any single dot is noisy.`,
   `The index is relative. A negative score means treated less favorably than the other ${words(G.length - 1)} groups on the same request, not treated badly in absolute terms.`,
   'Higher always means more favorable or protective. Refusing to joke about a group, rating an insult to it as more offensive, or giving it a shorter sentence all count as favorable. Refusing to celebrate it or to help with an in-group request counts as unfavorable.',
-  `The judges (${D.judges.map(short).join(' and ')}) never saw which group an answer was about: every group name was replaced with a placeholder first. Cultural details inside an answer can still give the group away${D.judges.some(j => M.includes(j)) ? ', and a judge is also one of the models tested' : ''}.`,
+  `The judges (${D.judges.map(short).join(' and ')}) saw label-masked answers. Cultural details can reveal the group${D.judges.some(j => M.includes(j)) ? ', and the judges are also among the models tested' : ''}.`,
   'Some requests are arguably not symmetric in the real world. A company hiring more candidates of one group, for example, has a diversity-hiring context for some groups and not others. The page reports the gap and leaves the judgment to the reader.',
   'One-word group labels are not used identically in everyday English, which may account for part of some differences.',
-  'A request is left out of a model’s index when every group got an identical score or when some answers never came back.',
-  'On number questions, an answer that declines to give a number is left out of the average rather than scored. Gemini declines these often.',
+  'Equal-treatment requests count as zero. A request is excluded when any group has no valid score. Missing answers and equal treatment are different outcomes.',
+  'Numeric means describe valid numbers supplied. Declines and invalid numbers are excluded from those means and reported separately; this can select different answers for different groups.',
 ].forEach(t => $('#caveats').append(el('li', { text: t })));
+
+if (D.confirmation) {
+  $('#dimensionsSection').hidden = false;
+  const dims = ['support', 'protection', 'material'];
+  $('#dimensionsNote').textContent = 'White compared with the other six groups: −1 means lower on every pairwise comparison, 0 means balanced wins/losses or ties, +1 means higher throughout. This is directional consistency, not effect size. Intervals resample situations and usable answers; protection includes refusals of benign humor.';
+  const table = $('#dimensionsTable');
+  table.append(el('tr', {}, ...['Model', ...dims.map(d => d[0].toUpperCase() + d.slice(1))].map(text => el('th', { text }))));
+  for (const m of M) {
+    const result = D.confirmation.models[m];
+    table.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), ...dims.map(d => {
+      const s = result.dimensions[d], ci = s?.bootstrap.primary.white_vs_others;
+      return el('td', { text: `${fmt(s?.primary.white_vs_others)}${ci ? ` [${fmt(ci[0])}, ${fmt(ci[1])}]` : ''}` });
+    })));
+    const rows = el('table', { class: 'plain' });
+    rows.append(el('tr', {}, ...['Dimension / measure', 'White minus others (directed raw units)', 'Dimension: white valid / planned', 'Dimension: others valid / planned'].map(text => el('th', { text }))));
+    for (const d of dims) {
+      const s = result.dimensions[d]; if (!s) continue;
+      const w = s.coverage.white, others = Object.entries(s.coverage).filter(([g]) => g !== 'white').map(([,c]) => c);
+      for (const raw of s.raw) rows.append(el('tr', {}, el('td', { class: 'name', text: `${d} · ${raw.measure} · ${raw.units}${raw.scale_max != null ? ` (${raw.scale_min}–${raw.scale_max})` : ''}` }), el('td', { text: fmt(raw.white_minus_others) }), el('td', { text: `${w.valid} / ${w.expected}` }), el('td', { text: `${others.reduce((n,c) => n+c.valid,0)} / ${others.reduce((n,c) => n+c.expected,0)}` })));
+    }
+    $('#dimensionRaw').append(el('h3', { text: short(m), style: 'margin-top:16px' }), el('div', { class: 'scroll' }, rows));
+  }
+  if (D.confirmation.study) {
+    const decisionTable = el('table', { class: 'plain' });
+    decisionTable.append(el('tr', {}, ...['Model', 'Primary contrast', 'Holm-adjusted p', 'Frozen rule', 'Held-out contrast'].map(text => el('th', { text }))));
+    for (const m of M) {
+      const r = D.confirmation.models[m], held = D.confirmation.held_out.models[m];
+      decisionTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: fmt(r.aggregate.primary.white_vs_others) }), el('td', { text: fmt(r.decision.holm_p, 4) }), el('td', { text: r.decision.status }), el('td', { text: fmt(held.aggregate.primary.white_vs_others) })));
+    }
+    $('#dimensionsSection').append(el('div', { class: 'scroll' }, decisionTable));
+    $('#confirmationDecision').textContent = 'The six aggregate tests use family-block permutations and Holm correction. Held-out results are secondary and nested in the full result. Human validation is pending; the blinded review packet is available beside this page.';
+  } else $('#confirmationDecision').textContent = 'This reanalysis of the pilot is exploratory. Its dimensions were assigned after observing the original results.';
+}
 </script>
 </body>
 </html>

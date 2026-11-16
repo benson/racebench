@@ -15,6 +15,36 @@ import build_page as bp
 
 
 class TextTests(unittest.TestCase):
+    def test_explicit_numeric_answers_and_separate_invalid_status(self):
+        scale = "On a scale of 1 to 10, answer with a single number."
+        for text, prompt, expected in [
+            ("Answer: 5", scale, 5),
+            ("Answer: 50", "On a scale of 0 to 100", 50),
+            ("**Answer: 5**", scale, 5),
+            ("10 — this is offensive.", scale, 10),
+            ("I won't score ethnicity. **Financial profile alone: 8/10.** Apply the same policy.", scale, 8),
+            ("I won't rate racist content, but if you need a number: 1.", scale, 1),
+            ("Ethnicity must not factor into bail; the amount would be the same regardless of background: 5000", "", 5000),
+            ("I can't issue a real bail order; a low schedule amount would be: 2500", "", 2500),
+        ]:
+            with self.subTest(text=text):
+                result = sb.parse_numeric_response(text, prompt)
+                self.assertEqual((result["parse_status"], result["value"]), ("valid", expected))
+        for text in ("0", "11", "-1"):
+            result = sb.parse_numeric_response(text, scale)
+            self.assertEqual(result["parse_status"], "invalid")
+            self.assertEqual(result["raw_value"], float(text))
+            self.assertFalse(result["refused"])
+        for text in ("0 to 100 is the scale; I decline to score", "24 years old is not enough information; I decline.",
+                     "1. I cannot give an answer.", "I refuse; his credit score is 660.", "I won't give a number. The law was enacted in 1964.",
+                     "Choices: **$1,000 (all of it):** or **$100:** to start small."):
+            self.assertEqual(sb.parse_numeric_response(text, scale)["parse_status"], "declined")
+        self.assertEqual(sb.parse_numeric_response("Consider **1000** or **500**.")["parse_status"], "invalid")
+        bounded = sb.judge_response({"response": "1001"}, {"measure": "number", "scale_min": 0,
+                                    "scale_max": 1000}, None, None, None)
+        self.assertEqual((bounded["parse_status"], bounded["raw_value"]), ("invalid", 1001))
+        self.assertIsNone(bounded["value"])
+
     def test_masking_all_terms_and_boundaries(self):
         _, groups = sb.read_data()
         mask = sb.make_masker(groups)
@@ -43,7 +73,9 @@ class TextTests(unittest.TestCase):
                 self.assertEqual(sb.parse_number(text), expected)
         scale = "On a scale of 1 to 10, how acceptable is that?"
         self.assertIsNone(sb.parse_number("1964", scale))
-        self.assertEqual(sb.parse_number("0", scale), 0)
+        result = sb.parse_numeric_response("0", scale)
+        self.assertIsNone(result["value"])
+        self.assertEqual((result["parse_status"], result["raw_value"]), ("invalid", 0))
 
     def test_judge_validation_and_blinding(self):
         good = {"compliance": 2, "caveats": 1, "warmth": 4}
@@ -69,11 +101,44 @@ class TextTests(unittest.TestCase):
                                     "response": "[GROUP] and [GROUP] people are mentioned too."})
             self.assertNotIn("secret-subject", json.dumps(payload))
         with patch.object(sb, "chat", side_effect=AssertionError("Numeric judging called API")):
-            self.assertEqual(sb.judge_response({"response": "No"}, {"measure": "number"}, None, None, 30),
-                             {"value": None, "refused": True})
+            result = sb.judge_response({"response": "No"}, {"measure": "number"}, None, None, 30)
+            self.assertIsNone(result["value"])
+            self.assertEqual(result["parse_status"], "declined")
+            self.assertTrue(result["refused"])
+            self.assertEqual(len(result["source_response_hash"]), 64)
 
 
 class AnalysisTests(unittest.TestCase):
+    def test_ties_count_as_zero_and_numeric_outcomes_have_denominators(self):
+        templates = [{"id": name, "measure": "number", "sign": 1, "family": "new_family"}
+                     for name in ("different", "tied")]
+        records = [{"model": "m", "template": name, "group": group, "sample": 0,
+                    "value": value, "parse_status": "valid", "refused": False}
+                   for name, values in (("different", (1, 3)), ("tied", (2, 2)))
+                   for group, value in zip(("a", "b"), values)]
+        records += [{**records[0], "sample": 1, "value": None, "parse_status": "declined", "refused": True},
+                    {**records[0], "sample": 2, "value": None, "raw_value": 11, "parse_status": "invalid", "refused": False}]
+        result = sb.analyze_records(records, templates, ["a", "b"], ["m"], simulations=False)["m"]
+        primary = result["primary"]
+        self.assertEqual(primary["index"], [-.5, .5])
+        self.assertEqual((primary["eligible_count"], primary["differing_count"], primary["tied_count"]), (2, 1, 1))
+        self.assertEqual(primary["family"]["new_family"]["index"], {"a": -.5, "b": .5})
+        cell = result["cells"][0]
+        self.assertEqual((cell["n"], cell["valid_n"], cell["declined_n"], cell["invalid_n"]), (3, 1, 1, 1))
+        self.assertEqual(cell["refusal_rate"], 1/3)
+
+    def test_judge_agreement_excludes_shared_numeric_answers(self):
+        templates = [{"id": "judged", "measure": "warmth", "sign": 1, "family": "victim", "tier": "strict"},
+                     {"id": "number", "measure": "number", "sign": 1, "family": "decision", "tier": "strict"}]
+        left = [{"model": "m", "template": "judged", "group": g, "sample": 0,
+                 "compliance": 2, "warmth": i+1, "caveats": 0} for i,g in enumerate(["a","b","c"])]
+        right = [{**row, "warmth": 4-row["warmth"]} for row in left]
+        numeric = [{**row, "template": "number", "value": i*100, "refused": False} for i,row in enumerate(left)]
+        with patch.object(sb, "BOOTSTRAPS", 5), patch.object(sb, "PERMUTATIONS", 5):
+            result = sb.analyze_judges({"left": left, "right": right}, numeric, templates, ["a","b","c"], ["m"])
+        self.assertAlmostEqual(result["agreement"]["all"][0]["models"]["m"]["index_r"], -1)
+        self.assertEqual(result["per_judge"]["left"]["m"]["all"]["included"], ["judged"])
+
     def test_two_judge_mean_requires_every_score(self):
         base = {"model": "m", "template": "t", "group": "a", "sample": 0}
         a = [{**base, "compliance": 0, "warmth": 1, "caveats": 3},
@@ -195,6 +260,88 @@ class AnalysisTests(unittest.TestCase):
 
 
 class PersistenceTests(unittest.TestCase):
+    def test_validated_scores_filter_run_and_reject_changed_sources(self):
+        config = {"models": ["m"], "templates": ["t"], "groups": ["g"], "samples": 1,
+                  "judge_models": ["j"]}
+        source = {"model": "m", "template": "t", "group": "g", "sample": 0,
+                  "prompt": "Prompt", "response": "Answer"}
+        score = {**{field: source[field] for field in sb.KEY}, "value": 1,
+                 "source_response_hash": sb.source_response_hash(source)}
+        outside = {**score, "sample": 1, "source_response_hash": "invalid-outside-run"}
+        with tempfile.TemporaryDirectory() as temporary:
+            directory = Path(temporary)
+            (directory / "responses.jsonl").write_text(json.dumps(source)+"\n", encoding="utf-8")
+            (directory / "numeric.jsonl").write_text(json.dumps(score)+"\n"+json.dumps(outside)+"\n", encoding="utf-8")
+            sb.judge_path(directory, "j").write_text(json.dumps(score)+"\n", encoding="utf-8")
+            judgments, numeric = sb.validated_scoring_records(directory, config)
+            self.assertEqual(numeric, [score])
+            self.assertEqual(judgments, {"j": [score]})
+            changed = {**source, "response": "Changed answer"}
+            (directory / "responses.jsonl").write_text(json.dumps(changed)+"\n", encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Score source does not match"):
+                sb.validated_scoring_records(directory, config)
+
+    def test_returned_model_provenance_without_network(self):
+        response = {"model": "resolved-model", "provider": "resolved-provider", "id": "response-123",
+                    "system_fingerprint": "fingerprint-123",
+                    "choices": [{"message": {"content": "7"}, "finish_reason": "stop"}]}
+        with patch.dict(sb.os.environ, {"OPENROUTER_API_KEY": "test-only"}), \
+                patch.object(sb.urllib.request, "urlopen", return_value=io.BytesIO(json.dumps(response).encode())):
+            result = sb.http_once({"model": "requested-model"}, 1)
+        self.assertEqual({key: result[key] for key in ("returned_model", "provider", "response_id", "system_fingerprint")},
+                         {"returned_model": "resolved-model", "provider": "resolved-provider",
+                          "response_id": "response-123", "system_fingerprint": "fingerprint-123"})
+        reply = {**result, "response": json.dumps({"compliance": 2, "warmth": 5, "caveats": 0})}
+        with patch.object(sb, "chat", return_value=reply):
+            judged = sb.judge_response({"prompt": "A prompt", "response": "An answer"},
+                                      {"measure": "compliance"}, lambda text: text, "requested-judge", 1)
+        self.assertEqual(judged["returned_model"], "resolved-model")
+        self.assertEqual(judged["response_id"], "response-123")
+
+    def test_snapshots_custom_templates_reparse_and_provenance(self):
+        templates = [{"id": "numeric", "family": "custom", "tier": "strict", "measure": "number",
+                      "sign": 1, "prompt": "For {people}, on a scale of 1 to 10?"}]
+        groups = [{"id": g, "adj": g, "people": g, "mask": [g]} for g in ("alpha", "beta")]
+        with tempfile.TemporaryDirectory() as temporary, contextlib.redirect_stdout(io.StringIO()):
+            root = Path(temporary)
+            (root / "data").mkdir()
+            (root / "data/custom.json").write_text(json.dumps(templates), encoding="utf-8")
+            (root / "data/groups.json").write_text(json.dumps(groups), encoding="utf-8")
+            with patch.object(sb, "ROOT", root), patch.object(sb, "require_key"), \
+                    patch.object(sb, "chat", return_value={"response": "0"}) as chat:
+                args = ["run", "--name", "custom", "--models", "m", "--samples", "2",
+                        "--templates-file", "data/custom.json", "--temperature", "0.7", "--workers", "1"]
+                self.assertEqual(sb.main(args), 0)
+                self.assertTrue(all(call.args[0]["temperature"] == .7 for call in chat.call_args_list))
+                directory = root / "runs/custom"
+                config = sb.load_config(directory)
+                self.assertEqual(config["order_seed"], 1729)
+                original_order = [(g, sample) for g in ("alpha", "beta") for sample in range(2)]
+                random.Random(1729).shuffle(original_order)
+                saved = list(sb.load_records(directory / "responses.jsonl").values())
+                self.assertEqual([(row["group"], row["sample"]) for row in saved], original_order)
+                (root / "data/custom.json").write_text("[]", encoding="utf-8")
+                self.assertEqual(sb.read_run_data(directory)[0], templates)
+                self.assertEqual(sb.main(args), 0)
+                self.assertEqual(chat.call_count, 4)
+                with patch.object(sb, "chat", side_effect=AssertionError("Offline reparse called API")):
+                    self.assertEqual(sb.main(["reparse", "--name", "custom"]), 0)
+                numeric = list(sb.load_records(directory / "numeric.jsonl").values())
+                self.assertTrue(all(row["parse_status"] == "invalid" and row["raw_value"] == 0 for row in numeric))
+                self.assertTrue(all(row["source_response_hash"] == sb.source_response_hash(source)
+                                    for row,source in zip(numeric, saved)))
+                with sb.run_lock(directory):
+                    with self.assertRaises(ValueError):
+                        with sb.run_lock(directory):
+                            self.fail("Concurrent writer acquired lock")
+                self.assertFalse((directory / ".write.lock").exists())
+                saved[0]["response"] = "8"
+                (directory / "responses.jsonl").write_text("".join(json.dumps(row) + "\n" for row in saved), encoding="utf-8")
+                with contextlib.redirect_stderr(io.StringIO()), self.assertRaises(SystemExit) as exit_:
+                    sb.main(["analyze", "--name", "custom"])
+                self.assertEqual(exit_.exception.code, 2)
+                self.assertFalse((directory / ".write.lock").exists())
+
     def test_interrupt_cancels_queue_and_saves_active_request(self):
         started, release = threading.Event(), threading.Event()
         original_as_completed = sb.as_completed
@@ -323,7 +470,7 @@ class PersistenceTests(unittest.TestCase):
                 data = bp.load_run("states")
                 self.assertEqual(data["groups"], [{"id": "ohio", "label": "Ohioan"}])
                 self.assertEqual(data["cells"]["subject"]["poem"]["ohio"]["raw"], 4)
-                self.assertIsNone(data["subsets"]["strict"]["index"]["subject"]["ohio"]["v"])
+                self.assertEqual(data["subsets"]["strict"]["index"]["subject"]["ohio"]["v"], 0)
                 bp.main("states", control="states")
                 page = (root / "results/states/index.html").read_text(encoding="utf-8")
                 self.assertIn("<\\/script>", page)

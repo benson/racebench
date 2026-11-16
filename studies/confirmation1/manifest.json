@@ -1,0 +1,105 @@
+{
+  "name": "confirmation1",
+  "frozen_utc": "2026-11-16T02:21:30.747358+00:00",
+  "status": "prospectively frozen locally; not externally preregistered",
+  "settings": {
+    "models": [
+      "openai/gpt-6-luna",
+      "anthropic/claude-haiku-5.5",
+      "deepseek/deepseek-v4.1-flash",
+      "qwen/qwen3.8-flash",
+      "mistralai/mistral-large-4-0",
+      "google/gemini-3.8-flash"
+    ],
+    "judges": [
+      "openai/gpt-6-luna",
+      "google/gemini-3.8-flash"
+    ],
+    "groups": [
+      "white",
+      "black",
+      "hispanic",
+      "asian",
+      "indian",
+      "arab",
+      "native"
+    ],
+    "samples": 5,
+    "max_tokens": 4000,
+    "seed": 1729,
+    "temperature": null,
+    "templates_file": "data/confirmation_templates.json",
+    "groups_file": "data/groups.json"
+  },
+  "held_out_situations": [
+    "cooperative_game_credits",
+    "workshop_selection",
+    "heritage_picnic",
+    "distrust_slogan",
+    "art_rejection",
+    "ingroup_board_game"
+  ],
+  "hashes": {
+    "swapbench.py": "02ba296e43081f246fb97fd7c9a99b3588b18ca9704cdc82f07899f7e66eaa74",
+    "confirmation.py": "65f20acf1041c84404ff7614e983566a4aab5872f59df5ad272019b184d8b5d4",
+    "confirmation_analysis.py": "bc8f46a33120d6a3ad413cc057989c037d7549b5ad1ccb1bb854ead4ab633eed",
+    "data/confirmation_templates.json": "bbfad565680f739b738891ed946bb2451559926107cd28efaff91697e985b09b",
+    "data/groups.json": "9933914bf75f2d7b4f74b7200f702b8c6de426107975263b9f588acdbaf2aa42",
+    "docs/confirmation-protocol.md": "b4f06d2ce3ba984c86525a03d107837b6acdbcb71266e53ff18ce4e393d40c79",
+    "docs/confirmation-prompt-rationale.md": "83b46eaada93eabb072ed18870d9ae7c187d54cd8074309434bac14ece01675b"
+  },
+  "estimate": {
+    "basis": "pilot2 recorded per-call billed costs; not a price guarantee",
+    "models": {
+      "subject:openai/gpt-6-luna": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.00014842595238095238,
+        "estimated_cost": 0.2493556
+      },
+      "subject:anthropic/claude-haiku-5.5": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.0002791372619047619,
+        "estimated_cost": 0.46895060000000005
+      },
+      "subject:deepseek/deepseek-v4.1-flash": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.0010737256211936662,
+        "estimated_cost": 1.8038590436053592
+      },
+      "subject:qwen/qwen3.8-flash": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.0004383059378733572,
+        "estimated_cost": 0.7363539756272401
+      },
+      "subject:mistralai/mistral-large-4-0": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.0014938245,
+        "estimated_cost": 2.50962516
+      },
+      "subject:google/gemini-3.8-flash": {
+        "calls": 1680,
+        "mean_pilot_cost": 0.003365204464285714,
+        "estimated_cost": 5.6535435
+      },
+      "judge:openai/gpt-6-luna": {
+        "calls": 6720,
+        "mean_pilot_cost": 0.00013207592270088605,
+        "estimated_cost": 0.8875502005499543
+      },
+      "judge:google/gemini-3.8-flash": {
+        "calls": 6720,
+        "mean_pilot_cost": 0.0010876237396883592,
+        "estimated_cost": 7.308831530705774
+      }
+    },
+    "estimated_usd": 19.618069610488327,
+    "allowance_50_percent_usd": 29.42710441573249,
+    "subject_calls": 10080,
+    "judge_calls": 13440
+  },
+  "snapshot_hashes": {
+    "templates.json": "bbfad565680f739b738891ed946bb2451559926107cd28efaff91697e985b09b",
+    "groups.json": "9933914bf75f2d7b4f74b7200f702b8c6de426107975263b9f588acdbaf2aa42",
+    "protocol.md": "b4f06d2ce3ba984c86525a03d107837b6acdbcb71266e53ff18ce4e393d40c79"
+  }
+}
