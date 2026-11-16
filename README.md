@@ -20,14 +20,16 @@ scores. This repository remains local; no publication or paid CI is configured.
 python confirmation.py estimate
 python confirmation.py freeze
 python confirmation.py verify
-python confirmation.py run --budget 35
+python collect_confirmation.py --budget 35 --workers 64
 python swapbench.py analyze --name confirmation1
 python confirmation.py analyze
 python confirmation.py audit
 python build_page.py confirmation1
 ```
 
-The run needs `OPENROUTER_API_KEY` in the environment. Estimation, freezing,
+The run needs `OPENROUTER_API_KEY` in the environment. The operational wrapper
+records concurrency, checks the key's remaining limit, and stops queued requests
+after a permanent account rejection. Estimation, freezing,
 analysis, and audit-packet preparation are local. Only `run` spends API credits.
 The frozen settings specify 24 situations, two phrasings, seven labels, six
 models, and five repeats. Group conditions are interleaved in a seeded random
@@ -53,6 +55,18 @@ The blinded `human-review.csv` and instructions are written beside the study's
 results page. Give separate copies to two independent human reviewers without
 the identity key under `runs/`. The packet is an outcome-independent random
 sample; model judges are not substitutes for human review.
+
+After both actual reviewers return completed copies, import and compare them:
+
+```powershell
+python review_humans.py import --name confirmation1 --reviewer "Reviewer One" first.csv --reviewer "Reviewer Two" second.csv
+```
+
+Incomplete reviews are rejected. The import retains raw reviews, checks the
+masked source text, and reports human/human and human/model-judge agreement,
+disagreements, and group-guess accuracy. It does not rerank models from a sparse
+audit packet. `review_humans.py status --name confirmation1` reports pending
+until actual reviews have been imported.
 
 Each cell averages repeated samples for one model, template, and group.
 The template's `sign` converts its primary measure into a common direction:
