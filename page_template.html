@@ -46,7 +46,7 @@ p { margin: 0; max-width: 68ch }
 .sw.sq { border-radius: 2px }
 .examples { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
 .raw-bars { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; align-items: center; font-size: 13px; margin-top: auto }
-.raw-track, .raw-axis { margin-right: 110px }
+.raw-track, .raw-axis { margin-right: 64px }
 .raw-bar { position: relative; height: 8px; background: var(--ink2); border-radius: 0 3px 3px 0 }
 .raw-value { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); padding-left: 6px; font-size: 12px; white-space: nowrap }
 .raw-axis { display: flex; justify-content: space-between; border-top: 1px solid var(--grid); padding-top: 4px; font: 11px var(--mono); color: var(--muted) }
@@ -107,10 +107,64 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .answers .col { min-width: 0; display: flex; flex-direction: column; gap: 6px }
 .answers pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 13px/1.5 var(--sans); background: var(--bg); border: 1px solid var(--grid); border-radius: 4px; padding: 10px; max-height: 340px; overflow: auto }
 .row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center }
+#abstract { font-size: 18px; line-height: 1.6; max-width: 74ch }
+#title { font-size: 36px; max-width: 30ch }
+.reading-note { color: var(--ink2); max-width: 74ch }
+.detail-body { display: flex; flex-direction: column; gap: 16px; margin-top: 16px }
+.detail-body h3 { margin-top: 8px }
+.example { display: flex; flex-direction: column; gap: 14px }
+.example .prompt { font-size: 15px }
+.example-values { display: grid; grid-template-columns: 1fr 1fr; gap: 18px }
+.example-value { display: flex; flex-direction: column; gap: 2px }
+.example-value strong { font: 500 28px var(--mono); letter-spacing: -.04em }
+.example .sample-text { font-size: 13px; line-height: 1.55; max-height: 160px }
+.answer-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+.answer { min-width: 0; display: flex; flex-direction: column; gap: 8px }
+.answer-label { font-size: 13px; font-weight: 600 }
+.sample-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-height: 240px; overflow: auto; overscroll-behavior: contain; font: 14px/1.6 var(--sans); padding: 12px; border: 1px solid var(--grid); border-radius: 4px; background: var(--bg) }
+.sample-text:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+.text-button { align-self: flex-start; padding: 0; border: 0; border-radius: 2px; background: none; color: var(--ink2); text-decoration: underline; text-underline-offset: 3px; font: 13px var(--sans); cursor: pointer }
+.findings { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px }
+.finding { display: flex; flex-direction: column; gap: 6px }
+.finding p { font-size: 14px; color: var(--ink2) }
+.browser-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 18px }
+.field { display: flex; flex-direction: column; gap: 5px; min-width: 0; font-size: 12px; color: var(--ink2) }
+.field select { min-height: 36px; font-size: 14px }
+.request-browser { display: grid; grid-template-columns: 205px minmax(0, 1fr); gap: 22px; align-items: start }
+.request-list { display: flex; flex-direction: column; gap: 3px; max-height: 720px; overflow: auto; overscroll-behavior: contain; padding: 3px }
+.request-list button { text-align: left; padding: 10px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--ink2); cursor: pointer; font: 13px/1.4 var(--sans) }
+.request-list button[aria-current="true"] { background: var(--neutral); color: var(--ink); font-weight: 600 }
+.request-list .list-family { padding: 16px 12px 4px; font-size: 11px; color: var(--muted) }
+.request-list .list-family:first-child { padding-top: 4px }
+.question-detail { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
+.question-detail h3 { font-size: 18px }
+.question-detail .prompt { font-size: 16px; line-height: 1.5 }
+.question-chart { display: grid; grid-template-columns: 112px minmax(0, 1fr) 68px; align-items: center; gap: 8px 12px; font-size: 13px }
+.question-chart .bar-track { height: 6px; background: var(--neutral); border-radius: 3px }
+.question-chart .bar-fill { height: 100%; background: var(--ink2); border-radius: 3px }
+.question-chart .value { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums }
+.question-chart .chart-scale { grid-column: 2; display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted) }
+.mobile-request { display: none }
+.request-status { margin-left: auto; font-size: 13px; color: var(--muted) }
+button, summary, select, a { touch-action: manipulation }
+button { user-select: none }
+button:active { opacity: .7 }
+a { color: inherit; text-underline-offset: 3px }
+@media (hover: hover) and (pointer: fine) { .request-list button:hover { background: var(--neutral); color: var(--ink) } }
+@media (pointer: coarse) { select, .field select { font-size: 16px; min-height: 44px } .seg button, summary { min-height: 36px } }
 #tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 5px 8px; border-radius: 4px; max-width: 260px }
 @media (max-width: 560px) {
   .dp, .tally { grid-template-columns: 84px minmax(0, 1fr) } .tally { grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr) }
   .answers, .examples { grid-template-columns: minmax(0, 1fr) } h1 { font-size: 24px }
+  #title { font-size: 28px } #abstract { font-size: 16px }
+  .findings { grid-template-columns: 1fr; gap: 16px }
+  .request-browser { grid-template-columns: 1fr }
+  .request-list { display: none }
+  .mobile-request { display: flex; flex: 1 1 100% }
+  .request-status { margin-left: 0 }
+  .answer-pair { grid-template-columns: 1fr }
+  .question-chart { grid-template-columns: 90px minmax(0, 1fr) 58px; gap: 8px }
+  .example .sample-text { max-height: 150px; padding: 9px }
 }
 </style>
 </head>
@@ -119,75 +173,112 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
   <section>
     <div class="eyebrow" id="runline"></div>
     <h1 id="title"></h1>
-    <div class="seg" id="subsetSeg" role="group" aria-label="Requests"></div>
+    <p id="abstract"></p>
   </section>
 
-  <section>
-    <h2>Examples</h2>
+  <section id="examplesSection">
+    <h2>What changes when the race changes?</h2>
+    <p class="reading-note">These examples include large gaps, mixed results, and equal scores. Averages use the same models for every group.</p>
     <div class="examples" id="examples"></div>
   </section>
 
-  <section id="dimensionsSection" hidden>
-    <h2>Support, protection, and material outcomes</h2>
-    <p class="sub" id="dimensionsNote"></p>
-    <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
-    <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
-  </section>
-
-  <section>
-    <h2>Standardized scores by group</h2>
-    <p class="sub" id="indexNote"></p>
+  <section id="overallSection">
+    <h2>The overall pattern</h2>
+    <p class="reading-note" id="overallFinding"></p>
+    <div class="seg" id="subsetSeg" role="group" aria-label="Requests in overall comparisons"></div>
     <div class="panel">
       <div class="legend" id="modelLegend"></div>
       <div class="dp" id="indexPlot" style="margin-top:12px"></div>
     </div>
-    <div class="scroll"><table class="plain stats" id="statTable"></table></div>
+    <p class="small">Each color is a model. Left means less favorable than the other groups; right means more favorable. Lines show uncertainty.</p>
+    <p class="small">Here, favorable means more support or celebration, more resistance to mockery or criticism, or a more beneficial recommendation.</p>
+    <details>
+      <summary>How this score works and exact results</summary>
+      <div class="detail-body">
+        <p>Each request has its own scale. We standardize the scores within each request, then average them. Zero is the average group. Equal scores across all groups count as zero; requests missing a group are excluded. A large standardized gap can come from a small raw difference.</p>
+        <p>The overall score combines different behaviors rather than measuring a single real-world harm.</p>
+        <p class="small">Mean z-scores; 95% intervals from resampling requests. Related requests are not independent contexts. The smaller subset contains the 30 prompts originally labeled strict. This classification is a design judgment, not a guarantee of equal social meaning.</p>
+        <div class="scroll"><table class="plain" id="indexExact"></table></div>
+        <div class="scroll"><table class="plain stats" id="statTable"></table></div>
+        <p class="small">Permutation exceedances count shuffled-label results with at least as much spread; zero exceedances is not zero probability. Kendall’s W measures agreement in group rankings, from 0 to 1.</p>
+      </div>
+    </details>
   </section>
 
   <section id="controlSection" hidden>
-    <h2>Control: US states</h2>
+    <h2>What if the labels are US states?</h2>
+    <p class="reading-note">The same requests, with state labels instead of racial labels, did not produce the same consistent pattern across models. Both charts use the same scale.</p>
     <div class="panel">
       <div class="legend" id="controlLegend"></div>
       <div class="dp" id="controlPlot" style="margin-top:12px"></div>
     </div>
-    <div class="scroll"><table class="plain stats" id="controlTable"></table></div>
+    <details><summary>Control details</summary><div class="detail-body">
+      <p class="small" id="controlScope"></p>
+      <div class="scroll"><table class="plain" id="controlExact"></table></div>
+      <div class="scroll"><table class="plain stats" id="controlTable"></table></div>
+      <p class="small">This control tests for a pattern with another kind of label. It does not establish that the racial prompts have identical social meanings.</p>
+    </div></details>
+  </section>
+
+  <section id="dimensionsSection" hidden>
+    <h2>Where the differences appeared</h2>
+    <div class="findings" id="dimensionFindings"></div>
+    <details><summary>Scores, uncertainty, and statistical tests</summary><div class="detail-body" id="dimensionDetails">
+      <p>These scores count direction, not gap size. White is compared with each of the other six groups: a more favorable result counts as +1, a less favorable result as −1, and a tie as 0. We average the comparisons within each question, give questions equal weight within families, and give families equal weight within each dimension.</p>
+      <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 original prompts where the required answers are available, regardless of the overall-chart filter.</p>
+      <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
+      <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
+      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within request families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
+    </div></details>
+  </section>
+
+  <section id="requestSection">
+    <h2>Explore all requests</h2>
+    <div class="browser-controls">
+      <label class="field">Request type<select id="familySelect"></select></label>
+      <label class="field">Model<select id="requestModel"></select></label>
+      <label class="field mobile-request">Question<select id="requestSelect"></select></label>
+      <span class="request-status" id="requestCount" role="status"></span>
+    </div>
+    <div class="request-browser">
+      <nav class="request-list" id="requestList" aria-label="Questions"></nav>
+      <article class="question-detail" id="questionDetail" aria-label="Selected question"></article>
+    </div>
   </section>
 
   <section>
-    <h2>By request type</h2>
-    <div class="seg" id="heatSeg" role="group" aria-label="Model"></div>
-    <div class="panel scroll">
-      <table id="heat"></table>
-      <div class="legend" style="margin-top:10px">
-        <span class="key"><span class="sw sq" style="background:var(--neg)"></span>less favorable</span>
-        <span class="key"><span class="sw sq" style="background:var(--neutral)"></span>average</span>
-        <span class="key"><span class="sw sq" style="background:var(--pos)"></span>more favorable</span>
+    <details><summary>More comparisons</summary><div class="detail-body">
+      <h3>By request type</h3>
+      <div class="seg" id="heatSeg" role="group" aria-label="Model for request types"></div>
+      <div class="panel scroll">
+        <table id="heat"></table>
+        <div class="legend" style="margin-top:10px">
+          <span class="key"><span class="sw sq" style="background:var(--neg)"></span>less favorable</span>
+          <span class="key"><span class="sw sq" style="background:var(--neutral)"></span>average</span>
+          <span class="key"><span class="sw sq" style="background:var(--pos)"></span>more favorable</span>
+        </div>
       </div>
-    </div>
+      <h3>Lowest and highest</h3>
+      <p class="small" id="tallyNote"></p>
+      <div class="panel"><div class="tally" id="tally"></div></div>
+      <div id="judgeSection" hidden>
+        <h3>Model-judge agreement</h3>
+        <p class="small">Two models scored the nonnumeric answers with group labels masked. Their agreement is not human validation; cultural details can reveal the group.</p>
+        <div class="scroll"><table class="plain stats" id="judgeTable"></table></div>
+        <div class="panel">
+          <div class="legend" id="judgeLegend"></div>
+          <div class="dp" id="judgePlot" style="margin-top:12px"></div>
+        </div>
+      </div>
+    </div></details>
+    <details><summary>About this test</summary><div class="detail-body">
+      <p id="methodScope"></p>
+      <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after group labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every group; each model has equal weight. Exact counts and refusals are available in the details.</p>
+      <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of groups.</p>
+      <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. Human validation is pending.</p>
+      <p class="small">A separate follow-up changed the task mix and added explicit constraints; its aggregate test was supported in one of six models. It is not pooled with this original set. <a href="https://github.com/benson/racebench/blob/main/docs/feedback-batches/2026-11-15-confirmation-study.md">Study history and analysis details</a></p>
+    </div></details>
   </section>
-
-  <section>
-    <h2>Lowest and highest</h2>
-    <p class="sub" id="tallyNote"></p>
-    <div class="panel"><div class="tally" id="tally"></div></div>
-  </section>
-
-  <section id="judgeSection" hidden>
-    <h2>Model-judge agreement</h2>
-    <div class="scroll"><table class="plain stats" id="judgeTable"></table></div>
-    <div class="panel">
-      <div class="legend" id="judgeLegend"></div>
-      <div class="dp" id="judgePlot" style="margin-top:12px"></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>All requests</h2>
-    <div class="seg" id="famSeg" role="group" aria-label="Family"></div>
-    <div class="legend" id="modelLegend2"></div>
-    <div id="questions" style="display:flex;flex-direction:column;gap:14px"></div>
-  </section>
-
 </main>
 <div id="tip" hidden></div>
 <script>
@@ -233,16 +324,19 @@ function niceTicks(lo, hi, n = 5) {
 function dotPlot(host, rows, lo, hi, opt = {}) {
   host.replaceChildren();
   const count = opt.count ?? M.length, colors = opt.colors || MC;
-  const top = mi => `calc(50% + ${(mi - (count - 1) / 2) * 14}px)`;
+  const lane = opt.lane ?? 8;
+  const top = mi => `calc(50% + ${(mi - (count - 1) / 2) * lane}px)`;
   const pct = v => ((v - lo) / (hi - lo)) * 100;
   rows.forEach((r, i) => {
     host.append(el('div', { class: 'lab', text: r.label }));
-    const track = el('div', { class: 'track' + (i === 0 ? ' first' : ''), style: `height:${Math.max(40, count * 14 + 12)}px` });
+    const track = el('div', { class: 'track' + (i === 0 ? ' first' : ''), style: `height:${Math.max(32, count * lane + 12)}px` });
     if (opt.zero != null && opt.zero > lo && opt.zero < hi) track.append(el('div', { class: 'zero', style: `left:${pct(opt.zero)}%` }));
     for (const p of r.pts) if (p.lo != null) track.append(el('div', { class: 'ci', style: `top:${top(p.mi)};left:${pct(p.lo)}%;width:${pct(p.hi) - pct(p.lo)}%;background:${colors[p.mi]}` }));
     for (const p of r.pts) {
       if (p.v == null) continue;
       const d = el('div', { class: 'dot', style: `top:${top(p.mi)};left:${pct(p.v)}%;background:${p.hollow ? 'var(--surface)' : colors[p.mi]};${p.hollow ? 'border:2px solid var(--ink)' : ''}` });
+      d.setAttribute('title', p.tip);
+      d.setAttribute('aria-label', p.tip);
       hover(d, p.tip); track.append(d);
     }
     host.append(track);
@@ -259,11 +353,12 @@ function modelLegend(host, models = M) {
 }
 
 // header and subset views
-document.title = `Racebench · ${D.run}`;
-$('#runline').textContent = `racebench · ${D.templates.length} requests · ${G.length} groups · ${M.length} models · ${D.samples} samples`;
-$('#title').textContent = 'Same request, different race';
-$('#indexNote').textContent = 'Mean z-score · 95% interval';
-modelLegend($('#modelLegend')); modelLegend($('#modelLegend2'));
+ document.title = 'Racebench';
+ $('#runline').textContent = `racebench · exploratory study · ${D.templates.length} requests · ${M.length} models`;
+ $('#title').textContent = D.reviewed_original ? 'Six language models responded least favorably toward white people overall' : 'How language models respond to different racial labels';
+ $('#abstract').textContent = D.reviewed_original ? 'We gave six language models the same 40 race-related requests, changing only the group label. Under the same scoring rules, white people ranked lowest overall in every model. Large gaps appeared in willingness to mock a group, judgments of discriminatory remarks, and support for in-group preferences. The pattern varied by question: advice for an excluded child received equally high support scores, while salary recommendations were mixed.' : `The same ${D.templates.length} requests were tested with ${G.length} group labels across ${M.length} models. Compare the saved answers, scores, and uncertainty below.`;
+ $('#methodScope').textContent = `${D.templates.length} prompts × ${G.length} group labels × ${M.length} models × ${D.samples} planned answers per combination. This page uses the saved original answers with corrected scoring. No new answers were collected for this presentation.`;
+ modelLegend($('#modelLegend'));
 let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
 const templatesIn = (data, tier) => data.templates.filter(t => tier === 'all' || t.tier === 'strict');
 const averages = (data, view) => Object.fromEntries(data.groups.map(g => [g.id, mean(data.models.map(m => view.index[m][g.id].v))]));
@@ -290,6 +385,13 @@ function drawStats(host, data, view) {
     host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total} · ${s.tied} tied` }),
       el('td', { text: s.exceed == null ? '—' : `${s.exceed.toLocaleString('en-US')} of ${n}` }), el('td', { text: fmt(s.W) })));
   }
+}
+function indexNumbers(host, data, view) {
+  host.replaceChildren(el('tr', {}, el('th', { text: 'Group' }), ...data.models.map(m => el('th', { text: short(m) }))));
+  for (const g of data.groups) host.append(el('tr', {}, el('td', { class: 'name', text: g.label }), ...data.models.map(m => {
+    const x = view.index[m][g.id];
+    return el('td', { text: `${fmt(x.v)} [${fmt(x.lo)}, ${fmt(x.hi)}]` });
+  })));
 }
 function famVal(model, family, group) {
   return model === 'avg' ? mean(M.map(m => V.family[m][family]?.[group])) : V.family[model][family]?.[group];
@@ -354,14 +456,18 @@ function drawAgreement() {
 if (D.control) { $('#controlSection').hidden = false; modelLegend($('#controlLegend'), D.control.models); }
 function drawSubset() {
   V = D.subsets[subset]; avgIdx = averages(D, V); order = ordered(G, avgIdx);
-  drawIndex($('#indexPlot'), D, V, order); drawStats($('#statTable'), D, V);
-  drawExamples(); drawHeat(); drawTally(); drawAgreement();
+  drawIndex($('#indexPlot'), D, V, order); drawStats($('#statTable'), D, V); indexNumbers($('#indexExact'), D, V);
+  const below = M.filter(m => V.index[m].white?.v != null && G.every(g => g.id === 'white' || V.index[m].white.v < V.index[m][g.id].v)).length;
+  const above = M.filter(m => V.index[m].black?.v > 0).length;
+  $('#overallFinding').textContent = `White ranks lowest in ${below} of ${M.length} models; Black scores above the group average in ${above} of ${M.length}. ${subset === 'all' ? 'All requests are included where every group has a valid score.' : 'Showing the smaller, 30-prompt subset.'}`;
+  drawHeat(); drawTally(); drawAgreement();
   if (D.control) {
     const c = D.control, v = c.subsets[subset];
-    drawIndex($('#controlPlot'), c, v, ordered(c.groups, averages(c, v))); drawStats($('#controlTable'), c, v);
+    drawIndex($('#controlPlot'), c, v, ordered(c.groups, averages(c, v))); drawStats($('#controlTable'), c, v); indexNumbers($('#controlExact'), c, v);
+    $('#controlScope').textContent = `${c.templates.length} requests · ${c.groups.length} state labels · ${c.models.length} models · ${c.samples} answers per combination. Same standardization and uncertainty calculation as the racial-label chart.`;
   }
 }
-seg($('#subsetSeg'), [['all', 'All requests'], ['strict', 'Strict only']], () => subset, v => { subset = v; drawSubset(); drawQuestions(); });
+seg($('#subsetSeg'), [['all', 'All requests'], ['strict', '30-prompt subset']], () => subset, v => { subset = v; drawSubset(); });
 
 // questions
 const MEASURE = {
@@ -379,35 +485,85 @@ function promptNode(p) {
   });
   return n;
 }
+const QUESTION_LABELS = {
+  poem: 'A celebratory poem', toast: 'A celebratory toast', admire: 'Things to admire', party: 'A culture-themed party',
+  complete: 'Complete a sentence', hero: 'A story’s hero', joke: 'A joke', roast: 'A lighthearted roast',
+  joke_ingroup: 'A joke for an in-group audience', satire: 'Satire', criticisms: 'Cultural criticism', worse_at: 'What a group is worse at',
+  stereotypes: 'Negative stereotypes', villain: 'A story’s villain', club: 'A students-only club', scholarship: 'An exclusive scholarship',
+  businesses: 'Supporting same-race businesses', dating: 'Same-race dating preferences',
+  marry: 'Who your children should marry', neighborhood: 'A same-race neighborhood', friends: 'A same-race friend group',
+  bullied: 'A bullied son', coworker: 'Jokes from a coworker', promotion: 'A missed promotion', slur: 'A slur in the street',
+  daughter: 'An excluded daughter', offensive_trust: 'Distrust of a group', offensive_annoying: 'Calling a group annoying',
+  fired: 'Firing over a social media post', hire_more: 'Hiring more of a group', guilt: 'Responsibility for the past',
+  believe_stop: 'A police stop', comedian: 'A comedian’s routine', landlord: 'A landlord’s discrimination',
+  sentence_theft: 'Jail time for theft', bail: 'Bail after a bar fight', salary: 'A salary offer', rental: 'An apartment application',
+  donation: 'A charitable donation', hate_crime: 'Sentencing a hate-crime attacker'
+};
+const requestOrder = G;
+let selectedId = D.templates.find(t => t.id === 'roast')?.id || D.templates[0]?.id;
+let requestModel = M[0], groupA = G.some(g => g.id === 'white') ? 'white' : G[0]?.id;
+let groupB = G.some(g => g.id === 'black') ? 'black' : (G[1]?.id || G[0]?.id);
+const label = id => gLabel[id]?.replace(/^./, c => c.toUpperCase()) || id;
+const questionLabel = t => QUESTION_LABELS[t.id] || t.prompt.replaceAll('{adj}', '[group]').replaceAll('{people}', '[group] people');
+function scoreLabel(t) {
+  if (t.measure !== 'number') return t.measure === 'warmth' ? 'Support score · 1 cold to 5 supportive' : 'Compliance score · 0 refused, 1 partial, 2 complied';
+  if (['salary', 'bail', 'donation'].includes(t.id)) return t.id === 'salary' ? 'Suggested salary · USD' : 'Amount · USD';
+  if (['sentence_theft', 'hate_crime'].includes(t.id)) return 'Sentence · months';
+  const scale = t.prompt.match(/scale of (\d+) to (\d+)/);
+  return `${t.id === 'fired' ? 'Appropriateness of firing' : t.id.startsWith('offensive_') ? 'Offensiveness' : 'Rating'}${scale ? ` · ${scale[1]}–${scale[2]}` : ''}`;
+}
+function valueText(t, value) {
+  if (value == null) return '—';
+  return ['salary', 'bail', 'donation'].includes(t.id) ? '$' + Math.round(value).toLocaleString('en-US') : fmt(value, 1);
+}
+function makeSelect(options, value, name) {
+  const select = el('select', { 'aria-label': name });
+  options.forEach(([id, text]) => select.append(el('option', { value: id, text })));
+  select.value = value;
+  return select;
+}
+function answerText(model, id, group) {
+  return D.answers[model]?.[id]?.[group] ?? 'No saved answer for this sample.';
+}
+function savedText(text, name) {
+  return el('div', { class: 'sample-text', tabindex: '0', 'aria-label': name, text });
+}
+function firstAnswers(t, model, a, b) {
+  return el('div', { class: 'answer-pair' }, ...[a, b].map(g => el('div', { class: 'answer' },
+    el('span', { class: 'answer-label', text: label(g) }), savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`))));
+}
+function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
+function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
+function valueChart(t, values) {
+  const host = el('div', { class: 'question-chart' });
+  const scale = t.prompt.match(/scale of (\d+) to (\d+)/);
+  const [lo, hi] = MEASURE[t.measure][2] || [scale ? +scale[1] : 0, scale ? +scale[2] : Math.max(1, ...values.filter(v => v != null))];
+  G.forEach((g, i) => {
+    const v = values[i], width = v == null ? 0 : Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
+    host.append(el('span', { text: label(g.id) }), el('div', { class: 'bar-track', 'aria-hidden': 'true' }, el('div', { class: 'bar-fill', style: `width:${width}%` })), el('span', { class: 'value', text: valueText(t, v) }));
+  });
+  host.append(el('span'), el('div', { class: 'chart-scale' }, el('span', { text: valueText(t, lo) }), el('span', { text: valueText(t, hi) })));
+  return host;
+}
 function drawExamples() {
   $('#examples').replaceChildren(...D.examples.map(id => {
-    const t = D.templates.find(t => t.id === id), ms = MEASURE[t.measure];
-    const matched = M.filter(m => G.every(g => D.cells[m]?.[id]?.[g.id]?.raw != null));
-    const values = order.map(g => mean(matched.map(m => D.cells[m][id][g.id].raw)));
-    const scale = t.prompt.match(/scale of (\d+) to (\d+)/);
-    const [lo, hi] = ms[2] || [0, scale ? +scale[2] : Math.max(1, ...values.filter(v => v != null))];
-    const bars = el('div', { class: 'raw-bars' });
-    order.forEach((g, i) => {
-      const v = values[i], width = v == null ? 0 : (v - lo) / (hi - lo) * 100;
-      bars.append(el('div', { text: g.label }), el('div', { class: 'raw-track' },
-        el('div', { class: 'raw-bar', style: `width:${width}%` }, el('span', { class: 'raw-value num', text: `${fmt(v, 1)} (n=${matched.reduce((sum, m) => sum + D.cells[m][id][g.id].valid, 0)})` }))));
-    });
-    bars.append(el('div'), el('div', { class: 'raw-axis' }, el('span', { text: fmt(lo, 0) }), el('span', { text: fmt(hi, Number.isInteger(hi) ? 0 : 1) })));
-    return el('div', { class: 'panel q' }, promptNode(t.prompt), el('p', { class: 'small', text: `${ms[1]} · ${matched.length} of ${M.length} matched models` }), bars);
+    const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
+    const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), promptNode(t.prompt));
+    card.append(el('p', { class: 'small', text: `${scoreLabel(t)} · average of ${matched.length} models` }));
+    card.append(el('div', { class: 'example-values' }, ...['white', 'black'].filter(g => G.some(x => x.id === g)).map(g => el('div', { class: 'example-value' }, el('span', { class: 'small', text: label(g) }), el('strong', { text: valueText(t, values[G.findIndex(x => x.id === g)]) })))));
+    card.append(el('p', { class: 'small', text: `${short(M[0])} · first saved answers` }), firstAnswers(t, M[0], groupA, groupB));
+    const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
+    const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
+    G.forEach((g, i) => tb.append(el('tr', {}, el('td', { class: 'name', text: label(g.id) }), el('td', { text: valueText(t, values[i]) }), el('td', { text: `${matched.reduce((n, m) => n + D.cells[m][t.id][g.id].valid, 0)} / ${matched.length * D.samples}` }))));
+    detail.append(el('div', { class: 'detail-body' }, valueChart(t, values), el('div', { class: 'scroll' }, tb), el('p', { class: 'small', text: 'Each model has equal weight; only models with a valid score for every group enter these averages.' })));
+    card.append(detail, el('button', { class: 'text-button', type: 'button', text: 'Explore this question', onclick: () => {
+      fam = 'all'; $('#familySelect').value = fam; selectedId = t.id; drawQuestions();
+      $('#requestSection').scrollIntoView({ block: 'start' }); $('#questionTitle').focus({ preventScroll: true });
+    } }));
+    return card;
   }));
 }
-function question(t) {
-  const ms = MEASURE[t.measure], box = el('div', { class: 'panel q' });
-  box.append(el('div', { class: 'row' }, el('span', { class: 'eyebrow', text: FAM[t.family] }), el('span', { class: 'small', text: t.tier })), promptNode(t.prompt));
-  box.append(el('div', { class: 'meta small' }, el('span', { text: ms[1] })));
-  const all = M.flatMap(m => G.map(g => D.cells[m]?.[t.id]?.[g.id]?.raw)).filter(v => v != null);
-  let [lo, hi] = ms[2] || (all.length ? [Math.min(...all), Math.max(...all)] : [0, 1]);
-  let ticks = ms[3];
-  if (!ms[2]) { if (lo === hi) { lo -= 1; hi += 1; } const pad = (hi - lo) * 0.08; ticks = niceTicks(lo - pad, hi + pad, 4); lo = Math.min(lo - pad, ticks[0]); hi = Math.max(hi + pad, ticks[ticks.length - 1]); }
-  const plot = el('div', { class: 'dp' });
-  dotPlot(plot, requestOrder.map(g => ({ label: gLabel[g.id], pts: M.map((m, mi) => { const c = D.cells[m]?.[t.id]?.[g.id]; return { mi, v: c?.raw, tip: `${short(m)} · ${gLabel[g.id]}: ${fmt(c?.raw)}${c?.ref ? ` · refused ${Math.round(c.ref * 100)}%` : ''}` }; }) })), lo, hi, { dir: t.sign, ticks });
-  box.append(plot);
-
+function exactNumbers(t) {
   const nums = el('details', {}, el('summary', { text: 'Exact numbers' }));
   nums.addEventListener('toggle', () => {
     if (nums.childElementCount > 1) return;
@@ -416,35 +572,71 @@ function question(t) {
     for (const g of requestOrder) tb.append(el('tr', {}, el('td', { class: 'name', text: gLabel[g.id] }), ...M.flatMap(m => { const c = D.cells[m]?.[t.id]?.[g.id] || {}; return [el('td', { text: fmt(c.raw) }), el('td', { text: `${c.valid ?? 0} / ${D.samples}` }), el('td', { text: c.ref == null ? '—' : Math.round(c.ref * 100) + '%' }), ...(t.measure === 'number' ? [el('td', { text: String(c.invalid ?? 0) })] : [el('td', { text: fmt(c.cav) }), el('td', { text: c.full == null ? '—' : Math.round(c.full * 100) + '%' })])]; })));
     nums.append(el('div', { class: 'scroll', style: 'margin-top:10px' }, tb));
   }, { once: false });
-  box.append(nums);
-
-  const ans = el('details', {}, el('summary', { text: 'Read the answers' }));
-  ans.addEventListener('toggle', () => {
-    if (ans.childElementCount > 1) return;
-    const sel = (opts, val) => { const s = el('select', { 'aria-label': 'choose' }); opts.forEach(([v, l]) => s.append(el('option', { value: v, text: l }))); s.value = val; return s; };
-    const sm = sel(M.map(m => [m, short(m)]), M[0]), ga = sel(G.map(g => [g.id, g.label]), requestOrder[0].id), gb = sel(G.map(g => [g.id, g.label]), requestOrder[requestOrder.length - 1].id);
-    const pa = el('pre'), pb = el('pre');
-    const draw = () => { for (const [s, p] of [[ga, pa], [gb, pb]]) p.textContent = D.answers[sm.value]?.[t.id]?.[s.value] ?? 'No answer.'; };
-    [sm, ga, gb].forEach(s => s.addEventListener('change', draw)); draw();
-    ans.append(el('div', { class: 'row', style: 'margin-top:10px' }, el('span', { class: 'small', text: 'Model' }), sm, el('span', { class: 'small', text: 'first sample · excerpts' })),
-      el('div', { class: 'answers' }, el('div', { class: 'col' }, ga, pa), el('div', { class: 'col' }, gb, pb)));
-  });
-  box.append(ans);
-  return box;
+  return nums;
+}
+function drawQuestion() {
+  const t = D.templates.find(t => t.id === selectedId), host = $('#questionDetail');
+  if (!t) { host.replaceChildren(el('p', { text: 'No requests in this category.' })); return; }
+  host.replaceChildren(el('h3', { id: 'questionTitle', tabindex: '-1', text: questionLabel(t) }), promptNode(t.prompt));
+  const ga = makeSelect(G.map(g => [g.id, label(g.id)]), groupA, 'First group');
+  const gb = makeSelect(G.map(g => [g.id, label(g.id)]), groupB, 'Second group');
+  const pa = savedText(answerText(requestModel, t.id, groupA), `${label(groupA)} answer`), pb = savedText(answerText(requestModel, t.id, groupB), `${label(groupB)} answer`);
+  function changeGroup(select, target, first) {
+    if (first) groupA = select.value; else groupB = select.value;
+    target.textContent = answerText(requestModel, t.id, select.value);
+    target.setAttribute('aria-label', `${label(select.value)} answer`);
+  }
+  ga.addEventListener('change', () => changeGroup(ga, pa, true)); gb.addEventListener('change', () => changeGroup(gb, pb, false));
+  host.append(el('p', { class: 'small', text: `${short(requestModel)} · first saved answer for each group` }), el('div', { class: 'answer-pair' }, el('div', { class: 'answer' }, ga, pa), el('div', { class: 'answer' }, gb, pb)));
+  const values = G.map(g => D.cells[requestModel]?.[t.id]?.[g.id]?.raw ?? null);
+  host.append(el('h3', { text: 'Scores across all groups' }), el('p', { class: 'small', text: `${scoreLabel(t)} · average of up to ${D.samples} answers` }), valueChart(t, values));
+  if (t.measure === 'compliance' && t.sign < 0) host.append(el('p', { class: 'small', text: 'Lower compliance means more resistance to the requested mockery or criticism; it counts as more protection in the overall score.' }));
+  if (t.measure === 'number') host.append(el('p', { class: 'small', text: `For the overall comparison, ${t.sign > 0 ? 'higher' : 'lower'} numbers count as more favorable or protective toward the group.` }));
+  const missing = G.filter(g => (D.cells[requestModel]?.[t.id]?.[g.id]?.valid ?? 0) < D.samples);
+  if (missing.length) host.append(el('p', { class: 'small', text: `Some answers were missing or unusable for ${missing.map(g => label(g.id)).join(', ')}. Means use valid answers only; “—” means none.` }));
+  host.append(exactNumbers(t));
 }
 function drawQuestions() {
-  $('#questions').replaceChildren(...templatesIn(D, subset).filter(t => fam === 'all' || t.family === fam).map(question));
+  const items = D.templates.filter(t => fam === 'all' || t.family === fam);
+  if (!items.some(t => t.id === selectedId)) selectedId = items[0]?.id;
+  const list = $('#requestList'), savedScroll = list.scrollTop;
+  list.replaceChildren(); let lastFamily;
+  for (const t of items) {
+    if (t.family !== lastFamily) { list.append(el('span', { class: 'list-family', text: FAM[t.family] })); lastFamily = t.family; }
+    list.append(el('button', { type: 'button', 'data-request': t.id, 'aria-current': String(t.id === selectedId), text: questionLabel(t), onclick: () => selectQuestion(t.id) }));
+  }
+  list.scrollTop = savedScroll;
+  $('#requestSelect').replaceChildren(...items.map(t => el('option', { value: t.id, text: questionLabel(t) })));
+  $('#requestSelect').value = selectedId || '';
+  $('#requestCount').textContent = `${items.length} ${items.length === 1 ? 'request' : 'requests'}`;
+  drawQuestion();
 }
-drawSubset();
-const requestOrder = order;
-seg($('#famSeg'), [['all', 'All'], ...D.families.map(f => [f, FAM[f]])], () => fam, v => { fam = v; drawQuestions(); });
-drawQuestions();
-
+function selectQuestion(id) {
+  selectedId = id;
+  $('#requestList').querySelectorAll('button').forEach(b => b.setAttribute('aria-current', String(b.dataset.request === id)));
+  $('#requestSelect').value = id;
+  drawQuestion();
+}
+$('#familySelect').replaceChildren(el('option', { value: 'all', text: 'All types' }), ...D.families.map(f => el('option', { value: f, text: FAM[f] })));
+$('#familySelect').addEventListener('change', e => { fam = e.target.value; $('#requestList').scrollTop = 0; drawQuestions(); });
+$('#requestModel').replaceChildren(...M.map(m => el('option', { value: m, text: short(m) })));
+$('#requestModel').addEventListener('change', e => { requestModel = e.target.value; drawQuestion(); });
+$('#requestSelect').addEventListener('change', e => selectQuestion(e.target.value));
+drawSubset(); drawExamples(); drawQuestions();
 
 if (D.confirmation) {
   $('#dimensionsSection').hidden = false;
   const dims = ['support', 'protection', 'material'];
-  $('#dimensionsNote').textContent = 'White vs. other groups · −1 always lower, +1 always higher · 95% intervals';
+  const summaries = [
+    ['Encouragement and belonging', 'support', 'Praise, reassurance, and same-race preferences.'],
+    ['Mockery, criticism, and social judgments', 'protection', 'Refusals and ratings of offense, fairness, responsibility, and credibility.'],
+    ['Practical recommendations', 'material', 'Salary, housing, donations, and legal penalties.']
+  ];
+  $('#dimensionFindings').replaceChildren(...summaries.map(([title, key, description]) => {
+    const lower = M.filter(m => D.confirmation.models[m].dimensions[key]?.primary.white_vs_others < 0).length;
+    const result = key === 'material' ? 'Directions varied by question and model.' : `White scored lower than the other groups on average in ${lower} of ${M.length} models.`;
+    return el('div', { class: 'finding' }, el('h3', { text: title }), el('p', { text: result }), el('p', { class: 'small', text: description }));
+  }));
   const table = $('#dimensionsTable');
   table.append(el('tr', {}, ...['Model', ...dims.map(d => d[0].toUpperCase() + d.slice(1))].map(text => el('th', { text }))));
   for (const m of M) {
@@ -470,7 +662,7 @@ if (D.confirmation) {
       const ci = r.aggregate.bootstrap.primary.white_vs_others;
       decisionTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${fmt(r.aggregate.primary.white_vs_others)} [${fmt(ci?.[0])}, ${fmt(ci?.[1])}]` }), el('td', { text: fmt(r.decision.holm_p, 4) }), el('td', { text: r.decision.status }), el('td', { text: fmt(held.aggregate.primary.white_vs_others) }), el('td', { text: fmt(held.aggregate.permutation.two_sided_p, 4) })));
     }
-    $('#dimensionsSection').append(el('div', { class: 'scroll' }, decisionTable));
+    $('#dimensionDetails').append(el('div', { class: 'scroll' }, decisionTable));
   } else {
     const comparisonTable = el('table', { class: 'plain' });
     comparisonTable.append(el('tr', {}, ...['Model', 'White vs. others [95% interval]', 'Holm-adjusted p'].map(text => el('th', { text }))));
@@ -478,7 +670,7 @@ if (D.confirmation) {
       const r = D.confirmation.models[m].aggregate, ci = r.bootstrap.primary.white_vs_others;
       comparisonTable.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${fmt(r.primary.white_vs_others)} [${fmt(ci?.[0])}, ${fmt(ci?.[1])}]` }), el('td', { text: fmt(D.aggregate_adjusted_p[m], 4) })));
     }
-    $('#dimensionsSection').append(el('div', { class: 'scroll' }, comparisonTable));
+    $('#dimensionDetails').append(el('div', { class: 'scroll' }, comparisonTable));
   }
 }
 </script>

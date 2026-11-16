@@ -1,0 +1,65 @@
+# Reader legibility
+
+Benson requested a finding-led title and short abstract, concrete examples,
+plain-language labels, visible answers, and less vertical repetition. He chose
+the compact request browser after reviewing this sketch:
+
+1. Finding-led title and short summary.
+2. The existing six examples, retaining mixed salary results and equal-scoring
+   support for an excluded daughter alongside larger gaps.
+3. Overall group comparison and state-label control, on the same scale.
+4. Plain-language summaries of support, protection, and practical decisions;
+   statistical tables and score definitions available in expandable detail.
+5. A request list and one selected question: visible answers, compact group
+   chart, and expandable exact numbers. On phones, use a request selector.
+6. Methodology and statistical details, expandable.
+
+## Rules
+
+- The claim is about the aggregate of these 40 prompts, not every race-related
+  question. All six models place white lowest overall; support for the daughter
+  prompt is equally high across groups, and salary directions vary by model.
+- Preserve prompt text, saved scores, sample counts, uncertainty, and all seven
+  groups. No new collection, judging, analysis run, or API expenditure.
+- Preserve the existing six examples. Do not choose model or answer samples by
+  the size of the gap. Answer displays default to the first configured model and
+  first saved sample; their scores average the valid repeated answers.
+- Show the full saved first answer instead of the former 1,400-character export
+  cutoff. Visually bounded answer areas must remain scrollable and selectable.
+- Move count repetition and statistical jargon into disclosure sections; keep
+  the score scale, score direction, source model, and missingness understandable.
+- Keep keyboard focus visible, selection on the whole button surface, no accent
+  rails, and no layout motion. Preserve the user's words in prompts and answers.
+- No unrequested user-visible features or copy; additions are limited to the
+  findings, explanations, disclosures, and browser requested in this brief.
+
+## Acceptance
+
+Verify all 40 questions are reachable, model and group selectors show matching
+saved answers, filters remain accurate, and detail tables retain counts and
+uncertainty. Review desktop and phone screenshots as complete surfaces. Obtain
+an independent visual review for the new layout. Keep this iteration on its
+branch until Benson accepts publication.
+
+## Implemented and checked
+
+- New title: “Six language models responded least favorably toward white people
+  overall.” The abstract limits the conclusion to these 40 prompts and includes
+  the equal-scoring daughter example and mixed salary results.
+- Original six examples retained, with white/Black averages, first saved answer
+  pairs, and counts for all seven groups behind a disclosure.
+- Main charts keep their original scores and common scale. Statistical tests,
+  family comparisons, and judge agreement remain accessible in disclosures.
+- All 40 requests are reachable through a list on desktop or a native selector
+  on narrow screens. Model/group changes were checked against saved answers.
+- Full first answers restored in 534 cases; all embedded analysis data other
+  than answer text is byte-equivalent as parsed data to the preceding version.
+- All 51 unit tests pass. Browser checks cover every request, model/group
+  changes, request-type filtering, exact values, missing numeric answers,
+  example navigation, and the overall subset control. No page errors observed.
+- Visual review covered desktop and 390px layouts; additional width check at
+  320px found no horizontal overflow. Physical-phone testing was not available.
+- Independent visual and precision reviews led to fixes for numeric scale lower
+  bounds, stacked phone answer panels, the visible definition of favorable,
+  directed score semantics, missing-data scope, and the protection category label.
+- No API/model runs. This version is saved on a non-deploying review branch.

@@ -93,8 +93,6 @@ def load_run(run, answers=True):
                 if row.get("error") or row["sample"] != 0 or not in_run(row, config):
                     continue
                 text = row["response"].strip()
-                if len(text) > 1400:
-                    text = text[:1400].rstrip() + " […]"
                 data["answers"].setdefault(row["model"], {}).setdefault(row["template"], {})[row["group"]] = text
     return data
 
