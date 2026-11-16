@@ -212,9 +212,6 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .detail-body h3 { margin-top: 8px }
 .example { display: flex; flex-direction: column; gap: 14px }
 .example .prompt { font-size: 15px }
-.example-values { display: grid; grid-template-columns: 1fr 1fr; gap: 18px }
-.example-value { display: flex; flex-direction: column; gap: 2px }
-.example-value strong { font: 500 28px var(--mono); letter-spacing: -.04em }
 .answer-range { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 14px 12px; align-items: center; padding-top: 4px; font-size: 13px }
 .range-track { position: relative; height: 6px; margin-inline: 5px; border-radius: 3px; background: var(--grid) }
 .range-dot { position: absolute; width: 10px; height: 10px; top: -2px; margin-left: -5px; background: var(--ink); border-radius: 50% }
@@ -673,8 +670,16 @@ function savedText(text, name) {
   return el('div', { class: 'sample-text', tabindex: '0', 'aria-label': name, text });
 }
 function firstAnswers(t, model, a, b) {
-  return el('div', { class: 'answer-pair' }, ...[a, b].map(g => el('div', { class: 'answer' },
-    el('span', { class: 'answer-label', text: label(g) }), savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`))));
+  return el('div', { class: 'answer-pair' }, ...[a, b].map((g, i) => {
+    const select = makeSelect(G.map(group => [group.id, label(group.id)]), g, `${questionLabel(t)}: ${i === 0 ? 'first' : 'second'} group`);
+    const answer = savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`);
+    select.addEventListener('change', () => {
+      answer.textContent = answerText(model, t.id, select.value);
+      answer.setAttribute('aria-label', `${label(select.value)} answer from ${short(model)}`);
+      answer.scrollTop = 0;
+    });
+    return el('div', { class: 'answer' }, select, answer);
+  }));
 }
 function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
 function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
@@ -693,16 +698,15 @@ function drawExamples() {
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
     const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), promptNode(t.prompt));
-    const range = answerRange(t), pair = G.filter(g => ['white', 'black'].includes(g.id));
+    const range = answerRange(t);
     if (range?.question) card.append(el('p', { class: 'range-question', text: range.question }));
     card.append(el('span', { class: 'small', text: `Average of ${matched.length} models` }));
-    if (range) card.append(rangeChart(t, pair.map(g => values[G.findIndex(x => x.id === g.id)]), pair));
-    else card.append(el('div', { class: 'example-values' }, ...pair.map(g => el('div', { class: 'example-value' }, el('span', { class: 'small', text: label(g.id) }), el('strong', { text: valueText(t, values[G.findIndex(x => x.id === g.id)]) })))));
+    card.append(rangeChart(t, values));
     card.append(el('p', { class: 'small', text: `${short(M[0])} · first saved answers` }), firstAnswers(t, M[0], groupA, groupB));
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
     const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
     G.forEach((g, i) => tb.append(el('tr', {}, el('td', { class: 'name', text: label(g.id) }), el('td', { text: valueText(t, values[i]) }), el('td', { text: `${matched.reduce((n, m) => n + D.cells[m][t.id][g.id].valid, 0)} / ${matched.length * D.samples}` }))));
-    detail.append(el('div', { class: 'detail-body' }, rangeChart(t, values), el('div', { class: 'scroll' }, tb), el('p', { class: 'small', text: `Average of ${matched.length} models, with equal weight per model. Only models with a valid score for every group enter these averages. Warmth and compliance are rated by the two model judges; numeric answers come directly from the model.` })));
+    detail.append(el('div', { class: 'detail-body' }, el('div', { class: 'scroll' }, tb), el('p', { class: 'small', text: `Average of ${matched.length} models, with equal weight per model. Only models with a valid score for every group enter these averages. Warmth and compliance are rated by the two model judges; numeric answers come directly from the model.` })));
     card.append(detail, el('button', { class: 'text-button', type: 'button', text: 'Explore this question', onclick: () => {
       fam = 'all'; $('#familySelect').value = fam; selectedId = t.id; drawQuestions();
       $('#requestSection').scrollIntoView({ block: 'start' }); $('#questionTitle').focus({ preventScroll: true });

@@ -83,3 +83,18 @@ this is consistency, not magnitude. Default order remains unchanged.
 Browser verification compared the order of all 40 questions to an independent
 Python calculation and checked range positions, native units, missing scores,
 and phone-width layout. The update remains on the same review branch.
+
+## All-group example follow-up
+
+Benson requested all seven groups in each featured chart and selectable groups
+for the saved-answer pairs. Each card now shows its full group chart, retaining
+the same matched-model averages, original bounds, and native currency units.
+Each answer column has an independent group selector; the model and saved
+sample remain unchanged. The disclosure retains exact scores and answer counts
+without repeating the chart already visible above it.
+
+Browser verification checked all seven groups on all six charts and all 84
+group/answer-column selections against the saved responses. Desktop and
+390-pixel phone layouts passed visual review with no horizontal overflow or
+JavaScript errors. Embedded study data is unchanged. Saved for local review;
+not deployed.
