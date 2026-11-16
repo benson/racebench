@@ -228,3 +228,14 @@ Verified all six labels remain on one line at desktop, 390px, and 320px widths;
 checked tooltip placement/dismissal, retained statistical tables, and no browser
 errors or horizontal overflow. Reviewed desktop and phone screenshots. Data and
 statistical results are unchanged.
+
+## Use race in presentation copy
+
+At Benson's request, replaced group with race in reader-facing racial labels,
+question titles, placeholders, help text, table headings, and accessibility
+labels. In-group preference/audience now says same-race. The state control uses
+state, and friend group retains its ordinary social meaning. Saved prompts,
+model answers, analysis data, and internal identifiers are unchanged.
+
+Verified rendered copy, state-control headings, chart-row selection, question
+filtering, and desktop/phone layout without overflow or browser errors.
