@@ -48,21 +48,27 @@ requires two independent people and cannot be completed by model agents.
 
 ## Current collection status
 
-The frozen study was committed before the first paid request. Collection saved
-989 of 10,080 subject slots, then stopped when the provider key's existing $20
-lifetime limit was exhausted. No new outcomes have been analyzed or judged.
-The user approved key-limit expansion to $50, which was saved and verified;
-the study's separate $35 cap remains. See the operational amendments under
-`studies/confirmation1/` for concurrency, interruption, and account-error handling.
-Collection has resumed after conservative ledger reconciliation.
+The frozen study was committed before the first paid request. Subject collection
+is complete: 10,062 of 10,080 answers after a bounded technical retry, with 18
+empty-output slots retained as missing. The first judge scored all 6,713 saved
+nonnumeric answers; the second has scored 4,473. No outcome analysis has run.
 
-49 tests pass. The corrected discovery page was inspected at desktop and
+The user approved key-limit expansion to $50, which was saved and verified;
+the study's separate $35 cap remains. After rate-limit reconciliation and a
+successful slower judging pass, the provider returned HTTP 402. The account
+dashboard shows only $1.07 prepaid credits remaining. A one-time $5 top-up costs
+$6.31 including fee and tax; this separate card charge awaits user approval.
+Nothing has been purchased and automatic top-up remains off. See the operational
+amendments under `studies/confirmation1/` for the full audit trail.
+
+50 tests pass. The corrected discovery page was inspected at desktop and
 390-pixel mobile widths; request filters, raw tables, and matching model counts
 work, with no page overflow or JavaScript errors. The original discovery page
-remains intact. The human-review import utility is implemented and tested, but
-the actual human packet awaits completion of collection and judging.
+remains intact. The human-review import utility is implemented and tested. The
+84-item packet has been generated and checked: two answers per model/group,
+blank scores, identity key separate. Actual human review remains pending.
 
 The reconciliation retains unknown/interrupted reservations and the original
-ledger. Finish source collection, judging, confirmation and held-out
+ledger. After the funding decision, finish judging, confirmation and held-out
 analysis, human-packet generation, page QA, and the final results commit. Do not
 label the partial run a confirmation or a null result.
