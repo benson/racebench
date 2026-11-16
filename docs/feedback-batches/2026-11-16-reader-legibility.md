@@ -158,3 +158,18 @@ including both placeholder types, isolated card state, reset, and stable row
 positions. Touch and keyboard checks passed; desktop/phone layouts and the
 moved toggle were verified. The page export now includes the original people
 wording as display metadata. All 56 tests pass; source scores are unchanged.
+
+## Prompt preview refinement
+
+Benson rejected the block treatment and requested text-only placeholders,
+continuous hover areas, equal-height rows, and single-line group labels.
+Placeholders now use muted monospace text; active wording uses a stronger
+color and bold weight. Full-prompt invisible measurement copies reserve the
+maximum paragraph height while allowing the visible words to flow naturally,
+without fixed-width blank spaces around individual substitutions.
+
+All chart rows are 34px tall with zero vertical gap and a 128px name column.
+Moving directly between rows never resets the prompt to its placeholder state.
+Pointer-path checks across all six cards at desktop and phone widths found
+zero resets, gaps, wrapped labels, or layout shifts. Both layouts were visually
+reviewed. Study data and statistical results remain unchanged.

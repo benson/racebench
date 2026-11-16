@@ -211,14 +211,16 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .detail-body { display: flex; flex-direction: column; gap: 16px; margin-top: 16px }
 .detail-body h3 { margin-top: 8px }
 .example { display: flex; flex-direction: column; gap: 14px }
-.example .prompt { font-size: 15px }
-.example .slot { display: inline-grid; vertical-align: baseline; padding: 0 4px; border: 1px dashed var(--axis); border-radius: 3px; background: var(--neutral); font-weight: 500; text-align: center }
-.example .slot-size, .example .slot-value { grid-area: 1 / 1 }
-.example .slot-size { visibility: hidden; user-select: none }
-.example .slot.active { background: var(--ink); color: var(--bg); border-color: var(--ink); border-style: solid }
-.answer-range.interactive-chart { row-gap: 6px }
-.question-chart.interactive-chart { row-gap: 0 }
-.chart-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; column-gap: inherit; padding: 4px 0; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; min-width: 0 }
+.example .prompt { display: grid; font-size: 15px }
+.example .prompt-copy, .example .prompt-measure { grid-area: 1 / 1 }
+.example .prompt-measure { visibility: hidden; pointer-events: none; user-select: none }
+.example .slot { font: 400 .94em var(--mono); color: var(--ink2) }
+.example .slot.active { color: var(--ink); font-weight: 600 }
+.answer-range.interactive-chart { grid-template-columns: 128px minmax(0, 1fr); row-gap: 0 }
+.question-chart.interactive-chart { grid-template-columns: 128px minmax(0, 1fr) 68px; row-gap: 0 }
+.interactive-chart .range-ends, .interactive-chart .chart-scale { padding-top: 8px }
+.chart-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; column-gap: inherit; height: 34px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; min-width: 0 }
+.chart-row > span:first-child { white-space: nowrap }
 .chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 @media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
 .example-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 14px }
@@ -601,20 +603,32 @@ const MEASURE = {
 let fam = 'all';
 function promptNode(p, preview = false) {
   const n = el('div', { class: 'prompt' });
+  const copy = preview ? el('span', { class: 'prompt-copy' }) : n;
   p.split(/(\{adj\}|\{people\})/).forEach(part => {
-    if (!['{adj}', '{people}'].includes(part)) { n.append(part); return; }
+    if (!['{adj}', '{people}'].includes(part)) { copy.append(part); return; }
     const placeholder = part === '{adj}' ? '[group]' : '[group] people';
-    if (!preview) { n.append(el('span', { class: 'slot', text: placeholder })); return; }
-    const candidates = [placeholder, ...G.map(g => part === '{adj}' ? g.label : g.people)];
+    if (!preview) { copy.append(el('span', { class: 'slot', text: placeholder })); return; }
     const slot = el('span', { class: 'slot', 'data-slot': part, 'data-placeholder': placeholder },
-      ...candidates.map(text => el('span', { class: 'slot-size', 'aria-hidden': 'true', text })),
       el('span', { class: 'slot-value', text: placeholder }));
-    n.append(slot);
+    copy.append(slot);
   });
+  if (preview) {
+    n.append(copy);
+    G.forEach(group => {
+      const measure = copy.cloneNode(true);
+      measure.className = 'prompt-measure';
+      measure.setAttribute('aria-hidden', 'true');
+      measure.querySelectorAll('.slot').forEach(slot => {
+        slot.textContent = slot.dataset.slot === '{adj}' ? group.label : group.people;
+        slot.classList.add('active');
+      });
+      n.append(measure);
+    });
+  }
   return n;
 }
 function previewPrompt(prompt, group) {
-  prompt.querySelectorAll('.slot').forEach(slot => {
+  prompt.querySelectorAll('.prompt-copy .slot').forEach(slot => {
     slot.querySelector('.slot-value').textContent = group ? (slot.dataset.slot === '{adj}' ? group.label : group.people) : slot.dataset.placeholder;
     slot.classList.toggle('active', !!group);
   });
@@ -624,9 +638,10 @@ function appendChartRow(host, group, onGroup, description, ...children) {
   host.classList.add('interactive-chart');
   const row = el('button', { type: 'button', class: 'chart-row', 'data-group': group.id, 'aria-label': `${description}. Preview this group in the request.` }, ...children);
   row.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') onGroup(group); });
-  row.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !row.matches(':focus-visible')) onGroup(null); });
+  const anotherRow = target => target instanceof Element && host.contains(target.closest('.chart-row'));
+  row.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !row.matches(':focus-visible') && !anotherRow(e.relatedTarget)) onGroup(null); });
   row.addEventListener('focus', () => onGroup(group));
-  row.addEventListener('blur', () => onGroup(null));
+  row.addEventListener('blur', e => { if (!anotherRow(e.relatedTarget)) onGroup(null); });
   row.addEventListener('click', () => onGroup(group));
   host.append(row);
 }
