@@ -133,6 +133,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .request-list .difference-count { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 3px }
 .example .sample-text { font-size: 13px; line-height: 1.55; max-height: 160px }
 .answer-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px }
+.example-answers { display: flex; flex-direction: column; gap: 10px }
 .answer { min-width: 0; display: flex; flex-direction: column; gap: 8px }
 .answer-label { font-size: 13px; font-weight: 600 }
 .sample-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-height: 240px; overflow: auto; overscroll-behavior: contain; font: 14px/1.6 var(--sans); padding: 12px; border: 1px solid var(--grid); border-radius: 4px; background: var(--bg) }
@@ -579,16 +580,22 @@ function savedText(text, name) {
   return el('div', { class: 'sample-text', tabindex: '0', 'aria-label': name, text });
 }
 function firstAnswers(t, model, a, b) {
-  return el('div', { class: 'answer-pair' }, ...[a, b].map((g, i) => {
+  const modelSelect = makeSelect(M.map(m => [m, short(m)]), model, `${questionLabel(t)}: answer model`);
+  const updates = [];
+  const pair = el('div', { class: 'answer-pair' }, ...[a, b].map((g, i) => {
     const select = makeSelect(G.map(group => [group.id, label(group.id)]), g, `${questionLabel(t)}: ${i === 0 ? 'first' : 'second'} group`);
     const answer = savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`);
-    select.addEventListener('change', () => {
+    function update() {
       answer.textContent = answerText(model, t.id, select.value);
       answer.setAttribute('aria-label', `${label(select.value)} answer from ${short(model)}`);
       answer.scrollTop = 0;
-    });
+    }
+    updates.push(update);
+    select.addEventListener('change', update);
     return el('div', { class: 'answer' }, select, answer);
   }));
+  modelSelect.addEventListener('change', () => { model = modelSelect.value; updates.forEach(update => update()); });
+  return el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'First saved answers' }, modelSelect), pair);
 }
 function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
 function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
@@ -641,7 +648,7 @@ function drawExamples() {
       const conclusion = check.spread === 0 ? 'Identical observed group scores' : check.significant ? 'Statistically significant group differences' : 'Group difference not established';
       card.append(el('p', { class: 'example-evidence' }, el('strong', { text: conclusion }), pValueHelp(t, check)));
     }
-    card.append(el('p', { class: 'small', text: `${short(M[0])} · first saved answers` }), firstAnswers(t, M[0], groupA, groupB));
+    card.append(firstAnswers(t, M[0], groupA, groupB));
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
     const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
     G.forEach((g, i) => tb.append(el('tr', {}, el('td', { class: 'name', text: label(g.id) }), el('td', { text: valueText(t, values[i]) }), el('td', { text: `${matched.reduce((n, m) => n + D.cells[m][t.id][g.id].valid, 0)} / ${matched.length * D.samples}` }))));

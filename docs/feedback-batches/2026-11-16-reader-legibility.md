@@ -123,3 +123,18 @@ Verified all six hovers, keyboard focus, hoverable tooltip content, Escape,
 outside dismissal, touch open/toggle/dismissal, and phone viewport bounds.
 Desktop and phone screenshots were reviewed; embedded study data and
 statistical results are unchanged.
+
+## Example model selectors
+
+Benson requested a model selector in each featured example. Each card now
+switches its two first-saved-answer panels independently, retaining the chosen
+groups and updating their accessible labels. Charts and statistical checks
+continue to summarize the matched models. Browser checks verified 72 answer
+combinations across all six cards/models, group changes after model changes,
+independent card state, unchanged aggregates, and desktop/phone layouts.
+
+Benson also asked why the 30-prompt subset toggle exists. It excludes the ten
+prompts originally tagged more context-dependent. Checking both views confirmed
+White remains lowest overall in all six models. The proposed simplification is
+to put the robustness check in methodological details; the toggle has not been
+changed without a request to do so.
