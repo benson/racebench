@@ -217,11 +217,11 @@ a { color: inherit; text-underline-offset: 3px }
     <details>
       <summary>How this score works and exact results</summary>
       <div class="detail-body">
-        <p>Each request has its own scale. We standardize the scores within each request, then average them. Zero is the average race. Equal scores across all races count as zero; requests missing a race are excluded. A large standardized gap can come from a small raw difference.</p>
+        <p>Each question has its own scale. We standardize the scores within each question, then average them. Zero is the average race. Equal scores across all races count as zero; questions missing a race are excluded. A large standardized gap can come from a small raw difference.</p>
         <p>The overall score combines different behaviors rather than measuring a single real-world harm.</p>
-        <p class="small">Mean z-scores; 95% intervals from resampling requests. Related requests are not independent contexts. The smaller subset contains the 30 prompts originally labeled strict. This classification is a design judgment, not a guarantee of equal social meaning.</p>
+        <p class="small">Mean z-scores; 95% intervals from resampling questions. Related questions are not independent contexts. The smaller subset contains the 30 prompts originally labeled strict. This classification is a design judgment, not a guarantee of equal social meaning.</p>
         <p>The same overall pattern remains after excluding ten questions where social context could affect the comparison.</p>
-        <div class="seg" id="subsetSeg" role="group" aria-label="Requests in overall comparisons"></div>
+        <div class="seg" id="subsetSeg" role="group" aria-label="Questions in overall comparisons"></div>
         <div class="scroll"><table class="plain" id="indexExact"></table></div>
         <div class="scroll"><table class="plain stats" id="statTable"></table></div>
         <p class="small">Permutation exceedances count shuffled-label results with at least as much spread; zero exceedances is not zero probability. Kendall’s W measures agreement in race rankings, from 0 to 1.</p>
@@ -231,7 +231,7 @@ a { color: inherit; text-underline-offset: 3px }
 
   <section id="controlSection" hidden>
     <h2>What if the labels are US states?</h2>
-    <p class="reading-note">The same requests, with state labels instead of racial labels, did not produce the same consistent pattern across models. Both charts use the same scale.</p>
+    <p class="reading-note">The same questions, with state labels instead of racial labels, did not produce the same consistent pattern across models. Both charts use the same scale.</p>
     <div class="panel">
       <div class="legend" id="controlLegend"></div>
       <div class="dp" id="controlPlot" style="margin-top:12px"></div>
@@ -247,7 +247,7 @@ a { color: inherit; text-underline-offset: 3px }
   <section id="requestSection">
     <h2>Explore all questions</h2>
     <div class="browser-controls">
-      <label class="field">Request type<select id="familySelect"></select></label>
+      <label class="field">Question type<select id="familySelect"></select></label>
       <label class="field">Model<select id="requestModel"></select></label>
       <label class="field question-order">Order<select id="questionOrder"><option value="original">Original order</option><option value="consistent">Most consistent White–Black gaps</option></select></label>
       <label class="field mobile-request">Question<select id="requestSelect"></select></label>
@@ -265,11 +265,11 @@ a { color: inherit; text-underline-offset: 3px }
       <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 original prompts where the required answers are available, regardless of the overall-chart filter.</p>
       <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
       <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
-      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within request families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
+      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within question families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
     </div></details>
     <details><summary>More comparisons</summary><div class="detail-body">
-      <h3>By request type</h3>
-      <div class="seg" id="heatSeg" role="group" aria-label="Model for request types"></div>
+      <h3>By question type</h3>
+      <div class="seg" id="heatSeg" role="group" aria-label="Model for question types"></div>
       <div class="panel scroll">
         <table id="heat"></table>
         <div class="legend" style="margin-top:10px">
@@ -378,7 +378,7 @@ function modelLegend(host, models = M) {
 // header and subset views
  document.title = 'Racebench';
  $('#title').textContent = D.reviewed_original ? 'Six language models responded least favorably toward white people overall' : 'How language models respond to different racial labels';
- $('#abstract').textContent = D.reviewed_original ? 'We tested six LLMs with race-related requests, changing only the race. After scoring, white people ranked lowest overall in every model. Large gaps appeared in willingness to mock a race, judgments of discriminatory remarks, and support for same-race preferences. The pattern varied by question. Advice for an excluded child received equally high support scores, while salary recommendations were mixed.' : `The same ${D.templates.length} requests were tested with ${G.length} race labels across ${M.length} models. Compare the saved answers, scores, and uncertainty below.`;
+ $('#abstract').textContent = D.reviewed_original ? 'We tested six LLMs with race-related questions, changing only the race. After scoring, white people ranked lowest overall in every model. Large gaps appeared in willingness to mock a race, judgments of discriminatory remarks, and support for same-race preferences. The pattern varied by question. Advice for an excluded child received equally high support scores, while salary recommendations were mixed.' : `The same ${D.templates.length} questions were tested with ${G.length} race labels across ${M.length} models. Compare the saved answers, scores, and uncertainty below.`;
  $('#methodScope').textContent = `${D.templates.length} prompts × ${G.length} race labels × ${M.length} models × ${D.samples} planned answers per combination. This page uses the saved original answers with corrected scoring. No new answers were collected for this presentation.`;
  modelLegend($('#modelLegend'));
 let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
@@ -401,7 +401,7 @@ function drawIndex(host, data, view, groupOrder) {
   }) })), ...range, { zero: 0, zeroLabel: data === D ? 'average race' : 'average state', dir: 1, count: data.models.length, colors: data.models.map(color) });
 }
 function drawStats(host, data, view) {
-  host.replaceChildren(el('tr', {}, ...['Model', 'Complete requests', 'Permutation exceedances', 'Kendall’s W'].map(text => el('th', { text }))));
+  host.replaceChildren(el('tr', {}, ...['Model', 'Complete questions', 'Permutation exceedances', 'Kendall’s W'].map(text => el('th', { text }))));
   for (const m of data.models) {
     const s = view.stats[m], n = s.draws.toLocaleString('en-US');
     host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total} · ${s.tied} tied` }),
@@ -448,7 +448,7 @@ function drawTally() {
     if (lows.length === 1) low[lows[0][0]]++;
     if (highs.length === 1) high[highs[0][0]]++;
   }
-  $('#tallyNote').textContent = `${total} request–model pairs · ties excluded`;
+  $('#tallyNote').textContent = `${total} question–model pairs · ties excluded`;
   const host = $('#tally'), mx = Math.max(1, ...Object.values(low), ...Object.values(high));
   host.replaceChildren(el('div'), el('div', { class: 'head', text: 'Alone at the bottom' }), el('div', { class: 'head', text: 'Alone at the top' }));
   for (const g of order) {
@@ -481,15 +481,15 @@ function drawSubset() {
   drawIndex($('#indexPlot'), D, V, order); drawStats($('#statTable'), D, V); indexNumbers($('#indexExact'), D, V);
   const below = M.filter(m => V.index[m].white?.v != null && G.every(g => g.id === 'white' || V.index[m].white.v < V.index[m][g.id].v)).length;
   const above = M.filter(m => V.index[m].black?.v > 0).length;
-  $('#overallFinding').textContent = `White ranks lowest in ${below} of ${M.length} models; Black scores above the race average in ${above} of ${M.length}. ${subset === 'all' ? 'All requests are included where every race has a valid score.' : 'Showing the smaller, 30-prompt subset.'}`;
+  $('#overallFinding').textContent = `White ranks lowest in ${below} of ${M.length} models; Black scores above the race average in ${above} of ${M.length}. ${subset === 'all' ? 'All questions are included where every race has a valid score.' : 'Showing the smaller, 30-prompt subset.'}`;
   drawHeat(); drawTally(); drawAgreement();
   if (D.control) {
     const c = D.control, v = c.subsets[subset];
     drawIndex($('#controlPlot'), c, v, ordered(c.groups, averages(c, v))); drawStats($('#controlTable'), c, v); indexNumbers($('#controlExact'), c, v);
-    $('#controlScope').textContent = `${c.templates.length} requests · ${c.groups.length} state labels · ${c.models.length} models · ${c.samples} answers per combination. Same standardization and uncertainty calculation as the racial-label chart.`;
+    $('#controlScope').textContent = `${c.templates.length} questions · ${c.groups.length} state labels · ${c.models.length} models · ${c.samples} answers per combination. Same standardization and uncertainty calculation as the racial-label chart.`;
   }
 }
-seg($('#subsetSeg'), [['all', 'All requests'], ['strict', '30-prompt subset']], () => subset, v => { subset = v; drawSubset(); });
+seg($('#subsetSeg'), [['all', 'All questions'], ['strict', '30-prompt subset']], () => subset, v => { subset = v; drawSubset(); });
 
 // questions
 const MEASURE = {
@@ -743,7 +743,7 @@ function exactNumbers(t) {
 }
 function drawQuestion() {
   const t = D.templates.find(t => t.id === selectedId), host = $('#questionDetail');
-  if (!t) { host.replaceChildren(el('p', { text: 'No requests in this category.' })); return; }
+  if (!t) { host.replaceChildren(el('p', { text: 'No questions in this category.' })); return; }
   host.replaceChildren(el('h3', { id: 'questionTitle', tabindex: '-1', text: questionLabel(t) }), promptNode(t.prompt));
   const ga = makeSelect(G.map(g => [g.id, label(g.id)]), groupA, 'First race');
   const gb = makeSelect(G.map(g => [g.id, label(g.id)]), groupB, 'Second race');
@@ -782,7 +782,7 @@ function drawQuestions() {
   list.scrollTop = savedScroll;
   $('#requestSelect').replaceChildren(...items.map(t => el('option', { value: t.id, text: questionLabel(t) + (questionOrder === 'consistent' ? ` · ${differenceSummary(t).text}` : '') })));
   $('#requestSelect').value = selectedId || '';
-  $('#requestCount').textContent = `${items.length} ${items.length === 1 ? 'request' : 'requests'}`;
+  $('#requestCount').textContent = `${items.length} ${items.length === 1 ? 'question' : 'questions'}`;
   drawQuestion();
 }
 function selectQuestion(id) {
