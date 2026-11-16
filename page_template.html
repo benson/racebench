@@ -116,8 +116,8 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .example .prompt { display: grid; font-size: 15px }
 .example .prompt-copy, .example .prompt-measure { grid-area: 1 / 1 }
 .example .prompt-measure { visibility: hidden; pointer-events: none; user-select: none }
-.example .slot { font: 400 .94em var(--mono); color: var(--ink2) }
-.example .slot.active { color: var(--ink); font-weight: 600 }
+.example .slot { font: inherit; color: var(--ink2) }
+.example .slot.active { color: var(--ink); font-weight: 500 }
 .answer-range.interactive-chart { grid-template-columns: 128px minmax(0, 1fr); row-gap: 0 }
 .question-chart.interactive-chart { grid-template-columns: 128px minmax(0, 1fr) 68px; row-gap: 0 }
 .interactive-chart .range-ends, .interactive-chart .chart-scale { padding-top: 8px }
@@ -511,11 +511,11 @@ function promptNode(p, preview = false) {
   const copy = preview ? el('span', { class: 'prompt-copy' }) : n;
   p.split(/(\{adj\}|\{people\})/).forEach(part => {
     if (!['{adj}', '{people}'].includes(part)) { copy.append(part); return; }
-    const placeholder = part === '{adj}' ? '[group]' : '[group] people';
-    if (!preview) { copy.append(el('span', { class: 'slot', text: placeholder })); return; }
-    const slot = el('span', { class: 'slot', 'data-slot': part, 'data-placeholder': placeholder },
-      el('span', { class: 'slot-value', text: placeholder }));
+    const placeholder = '[group]';
+    const slot = preview ? el('span', { class: 'slot', 'data-slot': part, 'data-placeholder': placeholder },
+      el('span', { class: 'slot-value', text: placeholder })) : el('span', { class: 'slot', text: placeholder });
     copy.append(slot);
+    if (part === '{people}') copy.append(' people');
   });
   if (preview) {
     n.append(copy);
@@ -524,7 +524,7 @@ function promptNode(p, preview = false) {
       measure.className = 'prompt-measure';
       measure.setAttribute('aria-hidden', 'true');
       measure.querySelectorAll('.slot').forEach(slot => {
-        slot.textContent = slot.dataset.slot === '{adj}' ? group.label : group.people;
+        slot.textContent = group.label;
         slot.classList.add('active');
       });
       n.append(measure);
@@ -534,7 +534,7 @@ function promptNode(p, preview = false) {
 }
 function previewPrompt(prompt, group) {
   prompt.querySelectorAll('.prompt-copy .slot').forEach(slot => {
-    slot.querySelector('.slot-value').textContent = group ? (slot.dataset.slot === '{adj}' ? group.label : group.people) : slot.dataset.placeholder;
+    slot.querySelector('.slot-value').textContent = group ? group.label : slot.dataset.placeholder;
     slot.classList.toggle('active', !!group);
   });
 }

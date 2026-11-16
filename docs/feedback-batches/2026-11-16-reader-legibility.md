@@ -188,3 +188,12 @@ threshold, and limits. Neither test results nor significance criteria changed.
 Verified all six statuses, desktop/phone tooltip placement, hover and dismissal,
 removal of the former block, and absence of page overflow or JavaScript errors.
 Desktop and phone screenshots were reviewed.
+
+## Inline group wording
+
+Benson requested that only the group name change, leaving “people” as ordinary
+sentence text. The placeholder is now always “[group]” in the surrounding
+font and size, with a muted color. Hover fills in only the name at medium
+weight and normal text color. Desktop/phone checks verified the rendered
+sentence against the original prompt for every example, literal unstyled
+“people,” matching fonts, and stable chart positions.
