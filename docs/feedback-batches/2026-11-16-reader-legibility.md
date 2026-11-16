@@ -138,3 +138,23 @@ prompts originally tagged more context-dependent. Checking both views confirmed
 White remains lowest overall in all six models. The proposed simplification is
 to put the robustness check in methodological details; the toggle has not been
 changed without a request to do so.
+
+## Prompt previews and subset placement
+
+Benson approved moving the subset toggle into methodology details and requested
+that hovering a group row substitute that group's wording into its example's
+prompt. The toggle now sits inside the overall-score explanation alongside a
+sentence stating that the main pattern survives the ten exclusions.
+
+Each featured chart row previews the exact adjective/people wording from the
+group definition in its own card. Repeated placeholders update together.
+Idle placeholders use a full dashed outline and neutral fill; active wording
+uses whole-surface contrast. Invisible sizing reserves each slot's largest
+wording so hovering does not move the target row. Keyboard focus and touch
+also preview a group, with reset on leaving or interacting elsewhere.
+
+All 42 example/group previews were checked against the group definitions,
+including both placeholder types, isolated card state, reset, and stable row
+positions. Touch and keyboard checks passed; desktop/phone layouts and the
+moved toggle were verified. The page export now includes the original people
+wording as display metadata. All 56 tests pass; source scores are unchanged.

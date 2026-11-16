@@ -114,6 +114,15 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .detail-body h3 { margin-top: 8px }
 .example { display: flex; flex-direction: column; gap: 14px }
 .example .prompt { font-size: 15px }
+.example .slot { display: inline-grid; vertical-align: baseline; padding: 0 4px; border: 1px dashed var(--axis); border-radius: 3px; background: var(--neutral); font-weight: 500; text-align: center }
+.example .slot-size, .example .slot-value { grid-area: 1 / 1 }
+.example .slot-size { visibility: hidden; user-select: none }
+.example .slot.active { background: var(--ink); color: var(--bg); border-color: var(--ink); border-style: solid }
+.answer-range.interactive-chart { row-gap: 6px }
+.question-chart.interactive-chart { row-gap: 0 }
+.chart-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; column-gap: inherit; padding: 4px 0; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; min-width: 0 }
+.chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
+@media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
 .example-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 14px }
 .p-help { position: relative; align-self: stretch }
 .p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 12px; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
@@ -198,7 +207,6 @@ a { color: inherit; text-underline-offset: 3px }
   <section id="overallSection">
     <h2>The overall pattern</h2>
     <p class="reading-note" id="overallFinding"></p>
-    <div class="seg" id="subsetSeg" role="group" aria-label="Requests in overall comparisons"></div>
     <div class="panel">
       <div class="legend" id="modelLegend"></div>
       <div class="dp" id="indexPlot" style="margin-top:12px"></div>
@@ -211,6 +219,8 @@ a { color: inherit; text-underline-offset: 3px }
         <p>Each request has its own scale. We standardize the scores within each request, then average them. Zero is the average group. Equal scores across all groups count as zero; requests missing a group are excluded. A large standardized gap can come from a small raw difference.</p>
         <p>The overall score combines different behaviors rather than measuring a single real-world harm.</p>
         <p class="small">Mean z-scores; 95% intervals from resampling requests. Related requests are not independent contexts. The smaller subset contains the 30 prompts originally labeled strict. This classification is a design judgment, not a guarantee of equal social meaning.</p>
+        <p>The same overall pattern remains after excluding ten questions where social context could affect the comparison.</p>
+        <div class="seg" id="subsetSeg" role="group" aria-label="Requests in overall comparisons"></div>
         <div class="scroll"><table class="plain" id="indexExact"></table></div>
         <div class="scroll"><table class="plain stats" id="statTable"></table></div>
         <p class="small">Permutation exceedances count shuffled-label results with at least as much spread; zero exceedances is not zero probability. Kendall’s W measures agreement in group rankings, from 0 to 1.</p>
@@ -491,14 +501,36 @@ const MEASURE = {
   number: ['The number the model gave', 'numeric answer', null, null],
 };
 let fam = 'all';
-function promptNode(p) {
+function promptNode(p, preview = false) {
   const n = el('div', { class: 'prompt' });
   p.split(/(\{adj\}|\{people\})/).forEach(part => {
-    if (part === '{adj}') n.append(el('span', { class: 'slot', text: '[group]' }));
-    else if (part === '{people}') n.append(el('span', { class: 'slot', text: '[group] people' }));
-    else n.append(part);
+    if (!['{adj}', '{people}'].includes(part)) { n.append(part); return; }
+    const placeholder = part === '{adj}' ? '[group]' : '[group] people';
+    if (!preview) { n.append(el('span', { class: 'slot', text: placeholder })); return; }
+    const candidates = [placeholder, ...G.map(g => part === '{adj}' ? g.label : g.people)];
+    const slot = el('span', { class: 'slot', 'data-slot': part, 'data-placeholder': placeholder },
+      ...candidates.map(text => el('span', { class: 'slot-size', 'aria-hidden': 'true', text })),
+      el('span', { class: 'slot-value', text: placeholder }));
+    n.append(slot);
   });
   return n;
+}
+function previewPrompt(prompt, group) {
+  prompt.querySelectorAll('.slot').forEach(slot => {
+    slot.querySelector('.slot-value').textContent = group ? (slot.dataset.slot === '{adj}' ? group.label : group.people) : slot.dataset.placeholder;
+    slot.classList.toggle('active', !!group);
+  });
+}
+function appendChartRow(host, group, onGroup, description, ...children) {
+  if (!onGroup) { host.append(...children); return; }
+  host.classList.add('interactive-chart');
+  const row = el('button', { type: 'button', class: 'chart-row', 'data-group': group.id, 'aria-label': `${description}. Preview this group in the request.` }, ...children);
+  row.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') onGroup(group); });
+  row.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !row.matches(':focus-visible')) onGroup(null); });
+  row.addEventListener('focus', () => onGroup(group));
+  row.addEventListener('blur', () => onGroup(null));
+  row.addEventListener('click', () => onGroup(group));
+  host.append(row);
 }
 const QUESTION_LABELS = {
   poem: 'A celebratory poem', toast: 'A celebratory toast', admire: 'Things to admire', party: 'A culture-themed party',
@@ -534,19 +566,19 @@ function answerRange(t) {
   }[t.id] || ['Lowest answer', 'Highest answer'];
   return {lo: +scale[1], hi: +scale[2], low: ends[0], high: ends[1]};
 }
-function rangeChart(t, values, groups = G) {
+function rangeChart(t, values, groups = G, onGroup = null) {
   const range = answerRange(t);
-  if (!range) return valueChart(t, values, groups);
+  if (!range) return valueChart(t, values, groups, onGroup);
   const host = el('div', { class: 'answer-range', 'aria-label': range.question || questionLabel(t) });
   groups.forEach((g, i) => {
     const value = values[i], track = el('div', { class: 'range-track' });
     if (value != null) {
       const position = Math.max(0, Math.min(100, (value - range.lo) / (range.hi - range.lo) * 100));
       const text = `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`;
-      const dot = el('span', { class: 'range-dot', style: `left:${position}%`, title: text, 'aria-label': text, tabindex: '0' });
+      const dot = el('span', { class: 'range-dot', style: `left:${position}%`, title: text, 'aria-label': text, ...(onGroup ? {} : { tabindex: '0' }) });
       hover(dot, text); track.append(dot);
     } else track.append(el('span', { class: 'small', text: '—', 'aria-label': 'No valid score' }));
-    host.append(el('span', { text: label(g.id) }), track);
+    appendChartRow(host, g, onGroup, `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`, el('span', { text: label(g.id) }), track);
   });
   host.append(el('div', { class: 'range-ends' }, el('span', { text: `${range.low} (${range.lo})` }), range.middle ? el('span', { text: range.middle }) : null, el('span', { text: `${range.high} (${range.hi})` })));
   return host;
@@ -599,13 +631,13 @@ function firstAnswers(t, model, a, b) {
 }
 function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
 function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
-function valueChart(t, values, groups = G) {
+function valueChart(t, values, groups = G, onGroup = null) {
   const host = el('div', { class: 'question-chart' });
   const scale = t.prompt.match(/scale of (\d+) to (\d+)/);
   const [lo, hi] = MEASURE[t.measure][2] || [scale ? +scale[1] : 0, scale ? +scale[2] : Math.max(1, ...values.filter(v => v != null))];
   groups.forEach((g, i) => {
     const v = values[i], width = v == null ? 0 : Math.max(0, Math.min(100, (v - lo) / (hi - lo) * 100));
-    host.append(el('span', { text: label(g.id) }), el('div', { class: 'bar-track', 'aria-hidden': 'true' }, el('div', { class: 'bar-fill', style: `width:${width}%` })), el('span', { class: 'value', text: valueText(t, v) }));
+    appendChartRow(host, g, onGroup, `${label(g.id)}: ${valueText(t, v)}`, el('span', { text: label(g.id) }), el('div', { class: 'bar-track', 'aria-hidden': 'true' }, el('div', { class: 'bar-fill', style: `width:${width}%` })), el('span', { class: 'value', text: valueText(t, v) }));
   });
   host.append(el('span'), el('div', { class: 'chart-scale' }, el('span', { text: valueText(t, lo) }), el('span', { text: valueText(t, hi) })));
   return host;
@@ -638,11 +670,14 @@ function drawExamples() {
   $('#exampleTestMethod').hidden = !D.example_checks;
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
-    const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), promptNode(t.prompt));
+    const prompt = promptNode(t.prompt, true);
+    const card = el('article', { class: 'panel example' }, el('h3', { text: questionLabel(t) }), prompt);
     const range = answerRange(t);
     if (range?.question) card.append(el('p', { class: 'range-question', text: range.question }));
     card.append(el('span', { class: 'small', text: `Average of ${matched.length} models` }));
-    card.append(rangeChart(t, values));
+    const chart = rangeChart(t, values, G, group => previewPrompt(prompt, group));
+    document.addEventListener('pointerdown', e => { if (!chart.contains(e.target)) previewPrompt(prompt, null); });
+    card.append(chart);
     const check = D.example_checks?.results[id];
     if (check?.status === 'available') {
       const conclusion = check.spread === 0 ? 'Identical observed group scores' : check.significant ? 'Statistically significant group differences' : 'Group difference not established';

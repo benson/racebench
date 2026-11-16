@@ -480,7 +480,7 @@ class PersistenceTests(unittest.TestCase):
                 (directory / "report.md").unlink()
                 (directory / "scores.csv").unlink()
                 data = bp.load_run("states")
-                self.assertEqual(data["groups"], [{"id": "ohio", "label": "Ohioan"}])
+                self.assertEqual(data["groups"], [{"id": "ohio", "label": "Ohioan", "people": "Ohioan people"}])
                 self.assertEqual(data["cells"]["subject"]["poem"]["ohio"]["raw"], 4)
                 self.assertEqual(data["subsets"]["strict"]["index"]["subject"]["ohio"]["v"], 0)
                 self.assertEqual(data["answers"]["subject"]["poem"]["ohio"],

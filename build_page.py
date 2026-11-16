@@ -44,7 +44,7 @@ def load_run(run, answers=True, example_checks=True):
     _, groups = read_run_data(directory, config)
     groups = select(groups, ",".join(config["groups"]))
     data = {"run": run, "models": config["models"], "samples": config["samples"],
-            "judges": analysis["judges"], "groups": [{"id": g["id"], "label": g["adj"]} for g in groups],
+            "judges": analysis["judges"], "groups": [{"id": g["id"], "label": g["adj"], "people": g["people"]} for g in groups],
             "templates": analysis["templates"], "families": analysis["families"],
             "subsets": {}, "cells": {}, "answers": {}, "agreement": analysis["agreement"]}
     data["examples"] = [tid for tid in EXAMPLES if any(t["id"] == tid for t in data["templates"])]
