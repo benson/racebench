@@ -219,7 +219,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .answer-range.interactive-chart { grid-template-columns: 128px minmax(0, 1fr); row-gap: 0 }
 .question-chart.interactive-chart { grid-template-columns: 128px minmax(0, 1fr) 68px; row-gap: 0 }
 .interactive-chart .range-ends, .interactive-chart .chart-scale { padding-top: 8px }
-.chart-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; column-gap: inherit; height: 34px; padding: 0; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; min-width: 0 }
+.chart-row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; align-items: center; column-gap: inherit; height: 34px; margin-inline: -8px; padding: 0 8px; border: 0; border-radius: 4px; background: transparent; color: inherit; font: inherit; text-align: left; cursor: pointer; min-width: 0 }
 .chart-row > span:first-child { white-space: nowrap }
 .chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 @media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
@@ -401,11 +401,12 @@ a { color: inherit; text-underline-offset: 3px }
     <details><summary>About this test</summary><div class="detail-body">
       <p id="methodScope"></p>
       <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after group labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every group; each model has equal weight. Exact counts and refusals are available in the details.</p>
-      <p id="exampleTestMethod" hidden>Each featured example tests differences across all seven groups, pooling the same models as its chart. It accounts for selecting the largest group gap and adjusts for all inspected questions. A significant result does not establish that every pair differs, that every model shows the effect, or that it generalizes to other prompts. An inconclusive result does not establish equality. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
+      <p id="exampleTestMethod" hidden>Each featured example tests differences across all seven groups, pooling the same models as its chart. It accounts for selecting the largest group gap and adjusts for all inspected questions. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
       <p>The optional White–Black ordering counts models that favor the same group, using the signed scores. It ranks by the number of agreeing models, then their share of comparable models; ties keep the original question order. It measures consistency, not the size of a gap. Missing scores are excluded.</p>
       <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of groups.</p>
       <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. The ratings of written answers have not been independently checked by human reviewers.</p>
       <p class="small">A separate follow-up changed the task mix and added explicit constraints; its aggregate test was supported in one of six models. It is not pooled with this original set. <a href="https://github.com/benson/racebench/blob/main/docs/feedback-batches/2026-11-15-confirmation-study.md">Study history and analysis details</a></p>
+      <p class="small" id="exampleCorrection" hidden></p>
     </div></details>
   </section>
 </main>
@@ -639,7 +640,7 @@ function previewPrompt(prompt, group) {
 function appendChartRow(host, group, onGroup, description, ...children) {
   if (!onGroup) { host.append(...children); return; }
   host.classList.add('interactive-chart');
-  const row = el('button', { type: 'button', class: 'chart-row', 'data-group': group.id, 'aria-label': `${description}. Preview this group in the request.` }, ...children);
+  const row = el('button', { type: 'button', class: 'chart-row', 'data-group': group.id, 'aria-label': `${description}. Choose this group for the answer comparison.` }, ...children);
   row.addEventListener('pointerenter', e => { if (e.pointerType === 'mouse') onGroup(group); });
   const anotherRow = target => target instanceof Element && host.contains(target.closest('.chart-row'));
   row.addEventListener('pointerleave', e => { if (e.pointerType === 'mouse' && !row.matches(':focus-visible') && !anotherRow(e.relatedTarget)) onGroup(null); });
@@ -729,7 +730,8 @@ function savedText(text, name) {
 }
 function firstAnswers(t, model, a, b) {
   const modelSelect = makeSelect(M.map(m => [m, short(m)]), model, `${questionLabel(t)}: answer model`);
-  const updates = [];
+  const updates = [], groupSelects = [];
+  let nextSide = 0;
   const pair = el('div', { class: 'answer-pair' }, ...[a, b].map((g, i) => {
     const select = makeSelect(G.map(group => [group.id, label(group.id)]), g, `${questionLabel(t)}: ${i === 0 ? 'first' : 'second'} group`);
     const answer = savedText(answerText(model, t.id, g), `${label(g)} answer from ${short(model)}`);
@@ -739,11 +741,19 @@ function firstAnswers(t, model, a, b) {
       answer.scrollTop = 0;
     }
     updates.push(update);
+    groupSelects.push(select);
     select.addEventListener('change', update);
     return el('div', { class: 'answer' }, select, answer);
   }));
   modelSelect.addEventListener('change', () => { model = modelSelect.value; updates.forEach(update => update()); });
-  return el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'First saved answers' }, modelSelect), pair);
+  return {
+    node: el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'First saved answers' }, modelSelect), pair),
+    pickGroup(group) {
+      groupSelects[nextSide].value = group;
+      updates[nextSide]();
+      nextSide = 1 - nextSide;
+    }
+  };
 }
 function matchedModels(t) { return M.filter(m => G.every(g => D.cells[m]?.[t.id]?.[g.id]?.raw != null)); }
 function groupMeans(t, models) { return G.map(g => mean(models.map(m => D.cells[m][t.id][g.id].raw))); }
@@ -763,12 +773,9 @@ function pValueHelp(t, check) {
   const id = `${t.id}-p-explanation`;
   const conclusion = check.spread === 0 ? 'Observed identical scores' : check.significant ? 'Significant group differences detected' : 'No significant difference detected';
   const button = el('button', { class: 'p-value', type: 'button', text: conclusion, 'aria-describedby': id, 'aria-controls': id, 'aria-expanded': 'false' });
-  const result = check.spread === 0 ? 'Every group received the same score in the saved answers.' : check.significant ? 'The test detects differences across the seven groups. It does not mean every pair differs or every model shows the same pattern.' : 'We can’t tell whether this gap is more than normal variation between answers. A value of 1 doesn’t prove the groups are equal.';
   const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true },
     el('strong', { text: `Adjusted p ${p}` }),
-    el('span', { text: `Uses a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. We count adjusted p-values below 0.05 as significant.` }),
-    el('span', { text: 'A small p-value means we’d rarely see a gap this large if changing the race made no difference. The chart shows the size of the gap.' }),
-    el('span', { text: result }));
+    el('span', { text: 'P-values run from 0 to 1. A value close to 0 means we’d rarely see a gap this large if changing the race made no difference. The chart shows the size of the gap.' }));
   const wrap = el('span', { class: 'p-help' }, button, explanation);
   let pinned = false;
   function show() {
@@ -789,6 +796,8 @@ function pValueHelp(t, check) {
 }
 function drawExamples() {
   $('#exampleTestMethod').hidden = !D.example_checks;
+  $('#exampleCorrection').hidden = !D.example_checks;
+  if (D.example_checks) $('#exampleCorrection').textContent = `Featured-example p-values use a finite-simulation correction followed by a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. Adjusted p-values below 0.05 are called statistically significant.`;
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
     const prompt = promptNode(t.prompt, true);
@@ -802,7 +811,12 @@ function drawExamples() {
     const chart = rangeChart(t, values, G, group => previewPrompt(prompt, group));
     document.addEventListener('pointerdown', e => { if (!chart.contains(e.target)) previewPrompt(prompt, null); });
     card.append(chart);
-    card.append(firstAnswers(t, M[0], groupA, groupB));
+    const answers = firstAnswers(t, M[0], groupA, groupB);
+    card.append(answers.node);
+    chart.addEventListener('click', e => {
+      const row = e.target.closest('.chart-row');
+      if (row && chart.contains(row)) answers.pickGroup(row.dataset.group);
+    });
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));
     const tb = el('table', { class: 'plain' }, el('tr', {}, ...['Group', 'Average score', 'Valid answers'].map(text => el('th', { text }))));
     G.forEach((g, i) => tb.append(el('tr', {}, el('td', { class: 'name', text: label(g.id) }), el('td', { text: valueText(t, values[i]) }), el('td', { text: `${matched.reduce((n, m) => n + D.cells[m][t.id][g.id].valid, 0)} / ${matched.length * D.samples}` }))));
@@ -813,8 +827,7 @@ function drawExamples() {
         const amount = ['salary', 'bail', 'donation'].includes(t.id) ? valueText(t, check.spread) : `${fmt(check.spread, 2)} points`;
         body.append(el('p', { class: 'small', text: `Largest observed average gap: ${amount}, with ${label(check.highest)} above ${label(check.lowest)} on this scale. ${check.same_direction} of ${check.models.length} models show that direction; ${check.tied} tie and ${check.opposite_direction} go the other way.` }));
       }
-      body.append(el('p', { class: 'small', text: `The test shuffles usable response scores between groups within each model, preserving answer counts. The two judge scores for an answer are averaged before testing. ${check.exceedances.toLocaleString('en-US')} of ${check.draws.toLocaleString('en-US')} shuffles produced a largest group gap at least this large. The p-value uses a finite-simulation correction, then a Bonferroni adjustment for ${D.example_checks.family_size} inspected questions.` }));
-      body.append(el('p', { class: 'small', text: `This is a test across all seven groups, not a separate significance test of the selected answer pair. It concerns usable scored answers to this prompt in these ${check.models.length} models. Statistical significance does not measure the size or importance of a difference, or validate the judges' ratings.` }));
+      body.append(el('p', { class: 'small', text: `The test shuffles usable response scores between groups within each model, preserving answer counts. The two judge scores for an answer are averaged before testing. ${check.exceedances.toLocaleString('en-US')} of ${check.draws.toLocaleString('en-US')} shuffles produced a largest group gap at least this large.` }));
       if (!check.significant) body.append(el('p', { class: 'small', text: check.spread === 0 ? 'The saved scores are identical across groups. This does not prove the model responses are equivalent in every respect.' : `Before the adjustment across questions, p ≈ ${check.p.toFixed(2)}. The available data do not clearly distinguish this pooled gap from response variation; that does not prove the true difference is zero.` }));
     }
     card.append(detail, el('button', { class: 'text-button', type: 'button', text: 'Explore this question', onclick: () => {

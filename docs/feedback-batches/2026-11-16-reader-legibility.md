@@ -197,3 +197,21 @@ font and size, with a muted color. Hover fills in only the name at medium
 weight and normal text color. Desktop/phone checks verified the rendered
 sentence against the original prompt for every example, literal unstyled
 “people,” matching fonts, and stable chart positions.
+
+## Row selection and tooltip trimming
+
+Benson requested a shorter hover containing only the adjusted p-value and a
+plain explanation that p-values range from zero to one, with small meaning
+close to zero. Correction mechanics now appear in the final paragraph of
+“About this test.” The repetitive pair/model caveats were removed from the
+hover and the duplicated per-card paragraph.
+
+Clicking a chart row now alternates between setting the first and second saved
+answer panels, independently per card and using its selected model. Native
+button keyboard activation and touch use the same path. Row backgrounds extend
+8px beyond their content on each side so highlights no longer touch the names.
+
+Verified 24 alternating clicks across all six cards, model changes between
+clicks, saved-answer correspondence, card independence, keyboard and touch,
+row padding/continuity, the trimmed tooltips, and correction placement.
+Desktop and phone screenshots were reviewed with no browser errors or overflow.
