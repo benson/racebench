@@ -63,3 +63,23 @@ branch until Benson accepts publication.
   bounds, stacked phone answer panels, the visible definition of favorable,
   directed score semantics, missing-data scope, and the protection category label.
 - No API/model runs. This version is saved on a non-deploying review branch.
+
+## Answer-range follow-up
+
+Benson removed the eyebrow header and the introductory example paragraph. He
+found changing score labels and numerical scales difficult to parse, and asked
+for answer ranges plus a way to find questions with recurring differences.
+
+Bounded measures now share a labeled range display using their original bounds;
+warmth and compliance are introduced as plain questions. Dollars and months
+retain their real units. Exact averages, counts, and scale definitions remain
+available in details. The full embedded data is unchanged.
+
+An optional White–Black ordering ranks questions by the number of models
+favoring the same group, then their share of comparable models, preserving the
+original order for ties. Counts show the direction, including tied outcomes;
+this is consistency, not magnitude. Default order remains unchanged.
+
+Browser verification compared the order of all 40 questions to an independent
+Python calculation and checked range positions, native units, missing scores,
+and phone-width layout. The update remains on the same review branch.
