@@ -115,6 +115,11 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .example { display: flex; flex-direction: column; gap: 14px }
 .example .prompt { font-size: 15px }
 .example-evidence { display: flex; flex-direction: column; gap: 3px; font-size: 14px }
+.p-help { position: relative; align-self: stretch }
+.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 12px; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
+.p-value:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px }
+.p-explanation { position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, 100%); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400 }
+.p-explanation.above { top: auto; bottom: calc(100% + 8px) }
 .answer-range { display: grid; grid-template-columns: 95px minmax(0, 1fr); gap: 14px 12px; align-items: center; padding-top: 4px; font-size: 13px }
 .range-track { position: relative; height: 6px; margin-inline: 5px; border-radius: 3px; background: var(--grid) }
 .range-dot { position: absolute; width: 10px; height: 10px; top: -2px; margin-left: -5px; background: var(--ink); border-radius: 50% }
@@ -282,7 +287,7 @@ a { color: inherit; text-underline-offset: 3px }
     <details><summary>About this test</summary><div class="detail-body">
       <p id="methodScope"></p>
       <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after group labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every group; each model has equal weight. Exact counts and refusals are available in the details.</p>
-      <p id="exampleTestMethod" hidden>Each featured example has an exploratory test of differences across all seven groups, pooling the same models as its chart. It accounts for selecting the largest group gap and adjusts for all inspected questions. A significant result does not establish that every pair differs, that every model shows the effect, or that it generalizes to other prompts. An inconclusive result does not establish equality. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
+      <p id="exampleTestMethod" hidden>Each featured example tests differences across all seven groups, pooling the same models as its chart. It accounts for selecting the largest group gap and adjusts for all inspected questions. A significant result does not establish that every pair differs, that every model shows the effect, or that it generalizes to other prompts. An inconclusive result does not establish equality. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
       <p>The optional White–Black ordering counts models that favor the same group, using the signed scores. It ranks by the number of agreeing models, then their share of comparable models; ties keep the original question order. It measures consistency, not the size of a gap. Missing scores are excluded.</p>
       <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of groups.</p>
       <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. The ratings of written answers have not been independently checked by human reviewers.</p>
@@ -598,6 +603,30 @@ function valueChart(t, values, groups = G) {
   host.append(el('span'), el('div', { class: 'chart-scale' }, el('span', { text: valueText(t, lo) }), el('span', { text: valueText(t, hi) })));
   return host;
 }
+function pValueHelp(t, check) {
+  const p = check.adjusted_p < .001 ? `≈ ${check.adjusted_p.toFixed(4)}` : `= ${check.adjusted_p.toFixed(2)}`;
+  const id = `${t.id}-p-explanation`;
+  const button = el('button', { class: 'p-value', type: 'button', text: `Adjusted p ${p}`, 'aria-describedby': id, 'aria-controls': id, 'aria-expanded': 'false' });
+  const result = check.spread === 0 ? 'Here, the observed scores are identical; that does not prove future answers will be.' : check.significant ? 'Here, the evidence of group differences is strong.' : 'Here, the result is inconclusive; a value of 1 does not prove equality.';
+  const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true, text: `Assuming group labels had no effect, the test checks how unusual a gap this large would be. Smaller p-values mean stronger evidence of a difference. “Adjusted” accounts for checking ${D.example_checks.family_size} questions. ${result} This measures evidence, not the size of the gap.` });
+  const wrap = el('span', { class: 'p-help' }, button, explanation);
+  let pinned = false;
+  function show() {
+    explanation.hidden = false;
+    explanation.classList.remove('above');
+    if (explanation.getBoundingClientRect().bottom > innerHeight - 8) explanation.classList.add('above');
+    button.setAttribute('aria-expanded', 'true');
+  }
+  function hide() { explanation.hidden = true; button.setAttribute('aria-expanded', 'false'); }
+  button.addEventListener('pointerenter', show);
+  button.addEventListener('focus', show);
+  wrap.addEventListener('pointerleave', () => { if (!pinned && document.activeElement !== button) hide(); });
+  button.addEventListener('blur', () => { pinned = false; hide(); });
+  button.addEventListener('click', () => { pinned = !pinned; if (pinned) show(); else hide(); });
+  document.addEventListener('pointerdown', e => { if (!wrap.contains(e.target)) { pinned = false; hide(); } });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { pinned = false; hide(); } });
+  return wrap;
+}
 function drawExamples() {
   $('#exampleTestMethod').hidden = !D.example_checks;
   $('#examples').replaceChildren(...D.examples.map(id => {
@@ -610,8 +639,7 @@ function drawExamples() {
     const check = D.example_checks?.results[id];
     if (check?.status === 'available') {
       const conclusion = check.spread === 0 ? 'Identical observed group scores' : check.significant ? 'Statistically significant group differences' : 'Group difference not established';
-      const p = check.adjusted_p < .001 ? `≈ ${check.adjusted_p.toFixed(4)}` : `= ${check.adjusted_p.toFixed(2)}`;
-      card.append(el('p', { class: 'example-evidence' }, el('strong', { text: conclusion }), el('span', { class: 'small', text: `Exploratory · adjusted p ${p}` })));
+      card.append(el('p', { class: 'example-evidence' }, el('strong', { text: conclusion }), pValueHelp(t, check)));
     }
     card.append(el('p', { class: 'small', text: `${short(M[0])} · first saved answers` }), firstAnswers(t, M[0], groupA, groupB));
     const detail = el('details', {}, el('summary', { text: 'All groups and answer counts' }));

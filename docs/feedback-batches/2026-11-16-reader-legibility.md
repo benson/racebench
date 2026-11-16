@@ -110,3 +110,16 @@ daughter example has identical observed scores. The page labels these checks
 exploratory and keeps size, per-model consistency, assumptions, and limitations
 available alongside the statistical result. No claim of general benchmark
 validation or general bias is implied by the test.
+
+## P-value explanation follow-up
+
+Benson requested removal of the repeated exploratory labels and a short,
+plain-language hover explanation for p-values. Each example now has an
+underlined p-value with contextual help explaining the null assumption,
+smaller values, the 40-question adjustment, and the result's interpretation.
+The exploratory-study description remains once in the methodology.
+
+Verified all six hovers, keyboard focus, hoverable tooltip content, Escape,
+outside dismissal, touch open/toggle/dismissal, and phone viewport bounds.
+Desktop and phone screenshots were reviewed; embedded study data and
+statistical results are unchanged.
