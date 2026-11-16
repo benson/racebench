@@ -607,8 +607,8 @@ function pValueHelp(t, check) {
   const p = check.adjusted_p < .001 ? `≈ ${check.adjusted_p.toFixed(4)}` : `= ${check.adjusted_p.toFixed(2)}`;
   const id = `${t.id}-p-explanation`;
   const button = el('button', { class: 'p-value', type: 'button', text: `Adjusted p ${p}`, 'aria-describedby': id, 'aria-controls': id, 'aria-expanded': 'false' });
-  const result = check.spread === 0 ? 'Here, the observed scores are identical; that does not prove future answers will be.' : check.significant ? 'Here, the evidence of group differences is strong.' : 'Here, the result is inconclusive; a value of 1 does not prove equality.';
-  const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true, text: `Assuming group labels had no effect, the test checks how unusual a gap this large would be. Smaller p-values mean stronger evidence of a difference. “Adjusted” accounts for checking ${D.example_checks.family_size} questions. ${result} This measures evidence, not the size of the gap.` });
+  const result = check.spread === 0 ? ' Here, every group got the same score.' : check.significant ? '' : ' Here, we can’t tell whether the gap is more than normal variation between answers. A value of 1 doesn’t mean the groups are equal.';
+  const explanation = el('span', { id, class: 'p-explanation', role: 'tooltip', hidden: true, text: `A small p-value means we’d rarely see a gap this large if changing the race made no difference. It doesn’t tell you how big the gap is—the chart shows that. We adjusted this number because checking ${D.example_checks.family_size} questions gives more chances to find a gap by accident.${result}` });
   const wrap = el('span', { class: 'p-help' }, button, explanation);
   let pinned = false;
   function show() {
