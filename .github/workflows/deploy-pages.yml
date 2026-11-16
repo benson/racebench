@@ -32,6 +32,8 @@ jobs:
         run: |
           mkdir _site
           cp index.html _site/index.html
+          mkdir _site/assets
+          cp assets/share-card.png _site/assets/share-card.png
           touch _site/.nojekyll
       - uses: actions/upload-pages-artifact@v4
         with:

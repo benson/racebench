@@ -4,6 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Racebench</title>
+<meta name="description" content="Six LLMs answered 40 questions with only the race changed. Compare their answers and scores across seven races.">
+<link rel="canonical" href="https://bensonperry.com/racebench/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Racebench">
+<meta property="og:title" content="Six language models responded least favorably toward white people overall">
+<meta property="og:description" content="Six LLMs answered 40 questions with only the race changed. Compare their answers and scores across seven races.">
+<meta property="og:url" content="https://bensonperry.com/racebench/">
+<meta property="og:image" content="https://bensonperry.com/racebench/assets/share-card.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Racebench: Six language models responded least favorably toward white people overall. 40 questions, 7 races, 6 models.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Six language models responded least favorably toward white people overall">
+<meta name="twitter:description" content="Six LLMs answered 40 questions with only the race changed. Compare their answers and scores across seven races.">
+<meta name="twitter:image" content="https://bensonperry.com/racebench/assets/share-card.png">
 <style>
 /* Copyright © 2017 IBM Corp. with Reserved Font Name "Plex"
 
@@ -147,7 +162,7 @@ p { margin: 0; max-width: 68ch }
 .raw-track, .raw-axis { margin-right: 64px }
 .raw-bar { position: relative; height: 8px; background: var(--ink2); border-radius: 0 3px 3px 0 }
 .raw-value { position: absolute; left: 100%; top: 50%; transform: translateY(-50%); padding-left: 6px; font-size: 12px; white-space: nowrap }
-.raw-axis { display: flex; justify-content: space-between; border-top: 1px solid var(--grid); padding-top: 4px; font: 11px var(--mono); color: var(--muted) }
+.raw-axis { display: flex; justify-content: space-between; border-top: 1px solid var(--grid); padding-top: 4px; font: 12px var(--mono); color: var(--muted) }
 
 /* dot plot */
 .dp { display: grid; grid-template-columns: 118px minmax(0, 1fr); row-gap: 0; align-items: center }
@@ -160,11 +175,12 @@ p { margin: 0; max-width: 68ch }
   box-shadow: 0 0 0 2px var(--surface); cursor: default }
 .dp .dot::after { content: ""; position: absolute; inset: -8px }
 .dp .axis { position: relative; height: 34px }
-.dp .tick { position: absolute; top: 6px; transform: translateX(-50%); font: 11px var(--mono); color: var(--muted) }
-.dp .dir { position: absolute; top: 20px; font-size: 11px; color: var(--muted); white-space: nowrap }
-.dp .axis.labeled { height: 58px }
+.dp .tick { position: absolute; top: 6px; transform: translateX(-50%); font: 12px var(--mono); color: var(--muted) }
+.dp .dir { position: absolute; top: 20px; font-size: 12px; color: var(--muted); white-space: nowrap }
+.dp .axis.labeled { height: 62px }
+.dp .unit { grid-column: 1 / -1; text-align: center; max-width: none; font-size: 12px; color: var(--ink2); margin-top: 6px }
 .dp .axis.labeled .dir { top: 40px }
-.dp .zero-label { position: absolute; top: 20px; transform: translateX(-50%); font-size: 11px; color: var(--muted); white-space: nowrap }
+.dp .zero-label { position: absolute; top: 20px; transform: translateX(-50%); font-size: 12px; color: var(--muted); white-space: nowrap }
 
 /* heatmap */
 .scroll { overflow-x: auto }
@@ -226,7 +242,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .example-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 4px }
 .example-heading h3 { min-width: 0 }
 .p-help { position: relative; max-width: 100%; text-align: left }
-.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 11px; line-height: 1.4; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
+.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 12px; line-height: 1.4; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
 .p-value:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px }
 .p-explanation { position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, calc(100vw - 64px)); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400; text-align: left }
 .p-explanation > * { display: block }
@@ -256,7 +272,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .request-list { display: flex; flex-direction: column; gap: 3px; max-height: 720px; overflow: auto; overscroll-behavior: contain; padding: 3px }
 .request-list button { text-align: left; padding: 10px 12px; border: 0; border-radius: 5px; background: transparent; color: var(--ink2); cursor: pointer; font: 13px/1.4 var(--sans) }
 .request-list button[aria-current="true"] { background: var(--neutral); color: var(--ink); font-weight: 600 }
-.request-list .list-family { padding: 16px 12px 4px; font-size: 11px; color: var(--muted) }
+.request-list .list-family { padding: 16px 12px 4px; font-size: 12px; color: var(--muted) }
 .request-list .list-family:first-child { padding-top: 4px }
 .question-detail { display: flex; flex-direction: column; gap: 16px; min-width: 0 }
 .question-detail h3 { font-size: 18px }
@@ -265,7 +281,7 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .question-chart .bar-track { height: 6px; background: var(--neutral); border-radius: 3px }
 .question-chart .bar-fill { height: 100%; background: var(--ink2); border-radius: 3px }
 .question-chart .value { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums }
-.question-chart .chart-scale { grid-column: 2; display: flex; justify-content: space-between; font: 11px var(--mono); color: var(--muted) }
+.question-chart .chart-scale { grid-column: 2; display: flex; justify-content: space-between; font: 12px var(--mono); color: var(--muted) }
 .mobile-request { display: none }
 .request-status { margin-left: auto; font-size: 13px; color: var(--muted) }
 button, summary, select, a { touch-action: manipulation }
@@ -276,6 +292,9 @@ a { color: inherit; text-underline-offset: 3px }
 @media (pointer: coarse) { select, .field select { font-size: 16px; min-height: 44px } .seg button, summary { min-height: 36px } }
 #tip { position: fixed; z-index: 20; pointer-events: none; background: var(--ink); color: var(--bg); font-size: 12px; padding: 5px 8px; border-radius: 4px; max-width: 260px }
 @media (max-width: 560px) {
+  .dp .axis.labeled { height: 82px }
+  .dp .dir { width: 48%; white-space: normal; line-height: 1.3 }
+  .dp .dir.more { text-align: right }
   .dp, .tally { grid-template-columns: 84px minmax(0, 1fr) } .tally { grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr) }
   .answers, .examples { grid-template-columns: minmax(0, 1fr) } h1 { font-size: 24px }
   #title { font-size: 28px } #abstract { font-size: 16px }
@@ -292,8 +311,9 @@ a { color: inherit; text-underline-offset: 3px }
 <body>
 <main>
   <section>
-    <h1 id="title"></h1>
+    <h1 id="title">Racebench</h1>
     <p id="abstract"></p>
+    <p class="reading-note" id="headlineTally"></p>
   </section>
 
   <section id="examplesSection">
@@ -314,13 +334,14 @@ a { color: inherit; text-underline-offset: 3px }
       <summary>How this score works and exact results</summary>
       <div class="detail-body">
         <p>Each question has its own scale. We standardize the scores within each question, then average them. Zero is the average race. Equal scores across all races count as zero; questions missing a race are excluded. A large standardized gap can come from a small raw difference.</p>
+        <p>With seven races, the mathematical limits are −2.45 and +2.45. A score of −1.1 is about halfway from the average to the lower limit.</p>
         <p>The overall score combines different behaviors rather than measuring a single real-world harm.</p>
-        <p class="small">Mean z-scores; 95% intervals from resampling questions. Related questions are not independent contexts. The smaller subset contains the 30 prompts originally labeled strict. This classification is a design judgment, not a guarantee of equal social meaning.</p>
+        <p class="small">Mean z-scores; 95% intervals from resampling questions. Related questions are not independent contexts.</p>
         <p>The same overall pattern remains after excluding ten questions where social context could affect the comparison.</p>
         <div class="seg" id="subsetSeg" role="group" aria-label="Questions in overall comparisons"></div>
         <div class="scroll"><table class="plain" id="indexExact"></table></div>
         <div class="scroll"><table class="plain stats" id="statTable"></table></div>
-        <p class="small">Permutation exceedances count shuffled-label results with at least as much spread; zero exceedances is not zero probability. Kendall’s W measures agreement in race rankings, from 0 to 1.</p>
+        <p class="small">The shuffle test randomly reassigns race labels and counts how often the results are at least as spread out as the observed scores. A count of zero means none of the tested shuffles matched that spread, not that chance is impossible. Kendall’s W measures agreement in race rankings, from 0 to 1.</p>
       </div>
     </details>
   </section>
@@ -357,10 +378,10 @@ a { color: inherit; text-underline-offset: 3px }
   <section>
     <details id="statisticalDetails" hidden><summary>Scores, uncertainty, and statistical tests</summary><div class="detail-body" id="dimensionDetails">
       <p>These scores count direction, not gap size. White is compared with each of the other six races: a more favorable result counts as +1, a less favorable result as −1, and a tie as 0. We average the comparisons within each question, give questions equal weight within families, and give families equal weight within each dimension.</p>
-      <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 original prompts where the required answers are available, regardless of the overall-chart filter.</p>
+      <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 questions where the required answers are available, regardless of the overall-chart filter.</p>
       <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
       <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
-      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within question families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
+      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within question families; Holm correction accounts for the six model tests.</p>
     </div></details>
     <details><summary>More comparisons</summary><div class="detail-body">
       <h3>By question type</h3>
@@ -388,11 +409,10 @@ a { color: inherit; text-underline-offset: 3px }
     </div></details>
     <details><summary>About this test</summary><div class="detail-body">
       <p id="methodScope"></p>
-      <p>Numbers come directly from the models. Two model judges scored other answers for compliance and warmth after race labels were masked. Missing or invalid numeric answers are not scored as zero. The examples use models with valid scores for every race; each model has equal weight. Exact counts and refusals are available in the details.</p>
-      <p id="exampleTestMethod" hidden>Each featured example tests differences across all seven races, pooling the same models as its chart. It accounts for selecting the largest race gap and adjusts for all inspected questions. These checks address response variation; they cannot rule out prompt-selection or model-judge bias.</p>
-      <p>The six examples span large differences, mixed results, and equal scores; they are illustrative, not a random sample. Displayed answers use the first configured model and first saved sample by default. The question browser lets you choose another model or any pair of races.</p>
-      <p>This is an exploratory test of selected prompts, not a random sample of all race-related questions. Labels can carry different social meanings, and the combined score depends on the stated definition of favorable treatment. The ratings of written answers have not been independently checked by human reviewers.</p>
-      <p class="small">A separate follow-up changed the task mix and added explicit constraints; its aggregate test was supported in one of six models. It is not pooled with this original set. <a href="https://github.com/benson/racebench/blob/main/docs/feedback-batches/2026-11-15-confirmation-study.md">Study history and analysis details</a></p>
+      <p>Numeric scores come directly from the models. Two model judges rated written answers for compliance and warmth with race labels masked. Missing or invalid numeric answers are excluded, not scored as zero.</p>
+      <p id="exampleTestMethod" hidden>Featured charts give each model equal weight and include only models with valid scores for every race. Each statistical test compares the largest average gap across all seven races.</p>
+      <p>The six featured questions were selected to illustrate large differences, mixed results, and equal scores. Displayed answers are the first response collected for each model and race.</p>
+      <p>This exploratory study uses selected questions, not a representative sample of all race-related questions. Race labels can carry different social meanings, and the overall score depends on how favorable treatment is defined. Model-judge ratings have not been independently checked by human reviewers.</p>
       <p class="small" id="exampleCorrection" hidden></p>
     </div></details>
   </section>
@@ -415,7 +435,8 @@ const G = D.groups, M = D.models, colorModels = [...new Set([...M, ...(D.control
 const color = m => `var(--m${colorModels.indexOf(m) % 6 + 1})`;
 const MC = M.map(color);
 const short = m => m.split('/').pop().split('-').map(w => w[0]?.toUpperCase() + w.slice(1)).join(' ').replace('Gpt ', 'GPT-').replace('Deepseek', 'DeepSeek').replace('Mistral Large 4 0', 'Mistral Large 4').replace('Qwen3.8 ', 'Qwen 3.8 ');
-const gLabel = Object.fromEntries(G.map(g => [g.id, g.label]));
+const displayLabel = text => text.replace(/^./, c => c.toUpperCase());
+const gLabel = Object.fromEntries(G.map(g => [g.id, displayLabel(g.label)]));
 const FAM = { celebrate: 'Celebrate', humor: 'Humor', critique: 'Critique', ingroup: 'Same-race preference', victim: 'Victim', rating: 'Ratings', decision: 'Decisions', celebration: 'Celebration', everyday_support: 'Everyday support', derogation: 'Derogation', allocation: 'Allocation', assessment: 'Assessment' };
 const fmt = (v, d = 2) => v == null ? '—' : (Math.abs(v) >= 1000 ? Math.round(v).toLocaleString('en-US') : (Math.abs(v) < .5 * 10 ** -d ? 0 : v).toFixed(d));
 const mean = a => { a = a.filter(x => x != null); return a.length ? a.reduce((s, x) => s + x, 0) / a.length : null; };
@@ -461,9 +482,10 @@ function dotPlot(host, rows, lo, hi, opt = {}) {
   host.append(el('div'));
   const axis = el('div', { class: 'axis' + (opt.zeroLabel ? ' labeled' : '') });
   for (const t of opt.ticks || niceTicks(lo, hi)) axis.append(el('div', { class: 'tick', style: `left:${pct(t)}%`, text: (opt.tickFmt || (x => fmt(x, Number.isInteger(x) ? 0 : 1)))(t) }));
-  if (opt.dir) axis.append(el('div', { class: 'dir', style: opt.dir > 0 ? 'right:0' : 'left:0', text: opt.dir > 0 ? 'more favorable →' : '← more favorable' }));
-  if (opt.zeroLabel) axis.append(el('div', { class: 'zero-label', style: `left:${pct(opt.zero)}%`, text: opt.zeroLabel }), el('div', { class: 'dir', style: 'left:0', text: '← less favorable' }));
+  if (opt.dir) axis.append(el('div', { class: opt.dir > 0 ? 'dir more' : 'dir less', style: opt.dir > 0 ? 'right:0' : 'left:0', text: opt.dir > 0 ? 'more favorable →' : '← more favorable' }));
+  if (opt.zeroLabel) axis.append(el('div', { class: 'zero-label', style: `left:${pct(opt.zero)}%`, text: opt.zeroLabel }), el('div', { class: 'dir less', style: 'left:0', text: '← less favorable' }));
   host.append(axis);
+  if (opt.unit) host.append(el('p', { class: 'unit', text: opt.unit }));
 }
 function modelLegend(host, models = M) {
   models.forEach(m => host.append(el('span', { class: 'key' }, el('span', { class: 'sw', style: `background:${color(m)}` }), short(m))));
@@ -473,29 +495,22 @@ function modelLegend(host, models = M) {
  document.title = 'Racebench';
  $('#title').textContent = D.reviewed_original ? 'Six language models responded least favorably toward white people overall' : 'How language models respond to different racial labels';
  $('#abstract').textContent = D.reviewed_original ? 'We tested six LLMs with race-related questions, changing only the race. After scoring, white people ranked lowest overall in every model. Large gaps appeared in willingness to mock a race, judgments of discriminatory remarks, and support for same-race preferences. The pattern varied by question. Advice for an excluded child received equally high support scores, while salary recommendations were mixed.' : `The same ${D.templates.length} questions were tested with ${G.length} race labels across ${M.length} models. Compare the saved answers, scores, and uncertainty below.`;
- $('#methodScope').textContent = `${D.templates.length} prompts × ${G.length} race labels × ${M.length} models × ${D.samples} planned answers per combination. This page uses the saved original answers with corrected scoring. No new answers were collected for this presentation.`;
+ $('#methodScope').textContent = `${D.templates.length} questions × ${G.length} races × ${M.length} models × ${D.samples} planned answers per combination.`;
  modelLegend($('#modelLegend'));
 let subset = 'all', V = D.subsets.all, avgIdx, order, heatModel = 'avg';
 const templatesIn = (data, tier) => data.templates.filter(t => tier === 'all' || t.tier === 'strict');
 const averages = (data, view) => Object.fromEntries(data.groups.map(g => [g.id, mean(data.models.map(m => view.index[m][g.id].v))]));
 const ordered = (groups, values) => [...groups].sort((a, b) => (values[a.id] ?? Infinity) - (values[b.id] ?? Infinity));
-function indexRange() {
-  const values = [0];
-  for (const data of [D, D.control].filter(Boolean)) for (const view of Object.values(data.subsets)) {
-    for (const groups of Object.values(view.index)) for (const x of Object.values(groups)) values.push(...[x.v, x.lo, x.hi].filter(v => v != null));
-  }
-  const lo = Math.min(...values), hi = Math.max(...values), pad = (hi - lo || 1) * .08;
-  return [lo - pad, hi + pad];
-}
-const range = indexRange();
+const indexLimit = Math.sqrt(Math.max(G.length, D.control?.groups.length || 0) - 1);
+const range = [-indexLimit, indexLimit];
 function drawIndex(host, data, view, groupOrder) {
-  dotPlot(host, groupOrder.map(g => ({ label: g.label, pts: data.models.map((m, mi) => {
+  dotPlot(host, groupOrder.map(g => ({ label: displayLabel(g.label), pts: data.models.map((m, mi) => {
     const x = view.index[m][g.id];
-    return { mi, v: x.v, lo: x.lo, hi: x.hi, tip: `${short(m)} · ${g.label}: ${fmt(x.v)} (95% range ${fmt(x.lo)} to ${fmt(x.hi)})` };
-  }) })), ...range, { zero: 0, zeroLabel: data === D ? 'average race' : 'average state', dir: 1, count: data.models.length, colors: data.models.map(color) });
+    return { mi, v: x.v, lo: x.lo, hi: x.hi, tip: `${short(m)} · ${displayLabel(g.label)}: ${fmt(x.v)} (95% range ${fmt(x.lo)} to ${fmt(x.hi)})` };
+  }) })), ...range, { zero: 0, zeroLabel: data === D ? 'average race' : 'average state', unit: `Average standardized score (−${fmt(indexLimit)} to +${fmt(indexLimit)})`, dir: 1, count: data.models.length, colors: data.models.map(color) });
 }
 function drawStats(host, data, view) {
-  host.replaceChildren(el('tr', {}, ...['Model', 'Complete questions', 'Permutation exceedances', 'Kendall’s W'].map(text => el('th', { text }))));
+  host.replaceChildren(el('tr', {}, ...['Model', 'Complete questions', 'Shuffles with as much spread', 'Kendall’s W'].map(text => el('th', { text }))));
   for (const m of data.models) {
     const s = view.stats[m], n = s.draws.toLocaleString('en-US');
     host.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), el('td', { text: `${s.used} of ${s.total} · ${s.tied} tied` }),
@@ -504,7 +519,7 @@ function drawStats(host, data, view) {
 }
 function indexNumbers(host, data, view) {
   host.replaceChildren(el('tr', {}, el('th', { text: data === D ? 'Race' : 'State' }), ...data.models.map(m => el('th', { text: short(m) }))));
-  for (const g of data.groups) host.append(el('tr', {}, el('td', { class: 'name', text: g.label }), ...data.models.map(m => {
+  for (const g of data.groups) host.append(el('tr', {}, el('td', { class: 'name', text: displayLabel(g.label) }), ...data.models.map(m => {
     const x = view.index[m][g.id];
     return el('td', { text: `${fmt(x.v)} [${fmt(x.lo)}, ${fmt(x.hi)}]` });
   })));
@@ -531,18 +546,22 @@ function seg(host, items, get, set) {
   draw();
 }
 seg($('#heatSeg'), [['avg', `Average of ${words(M.length)}`], ...M.map(m => [m, short(m)])], () => heatModel, v => { heatModel = v; drawHeat(); });
-function drawTally() {
-  const low = Object.fromEntries(G.map(g => [g.id, 0])), high = { ...low }; let total = 0;
-  for (const m of M) for (const t of templatesIn(D, subset)) {
-    const c = D.cells[m]?.[t.id]; if (!c) continue;
-    const v = G.map(g => [g.id, c[g.id]?.signed]).filter(x => x[1] != null); if (v.length < G.length) continue;
-    const mn = Math.min(...v.map(x => x[1])), mx = Math.max(...v.map(x => x[1])); if (mn === mx) continue;
+function tallyCounts(tier) {
+  const low = Object.fromEntries(G.map(g => [g.id, 0])), high = { ...low }; let total = 0, incomplete = 0, allTied = 0;
+  for (const m of M) for (const t of templatesIn(D, tier)) {
+    const c = D.cells[m]?.[t.id]; if (!c) { incomplete++; continue; }
+    const v = G.map(g => [g.id, c[g.id]?.signed]).filter(x => x[1] != null); if (v.length < G.length) { incomplete++; continue; }
+    const mn = Math.min(...v.map(x => x[1])), mx = Math.max(...v.map(x => x[1])); if (mn === mx) { allTied++; continue; }
     total++;
     const lows = v.filter(x => x[1] === mn), highs = v.filter(x => x[1] === mx);
     if (lows.length === 1) low[lows[0][0]]++;
     if (highs.length === 1) high[highs[0][0]]++;
   }
-  $('#tallyNote').textContent = `${total} question–model pairs · ties excluded`;
+  return { low, high, total, incomplete, allTied };
+}
+function drawTally() {
+  const { low, high, total, incomplete, allTied } = tallyCounts(subset);
+  $('#tallyNote').textContent = `${total} question–model comparisons · ${allTied} all-race ties and ${incomplete} incomplete comparisons omitted`;
   const host = $('#tally'), mx = Math.max(1, ...Object.values(low), ...Object.values(high));
   host.replaceChildren(el('div'), el('div', { class: 'head', text: 'Alone at the bottom' }), el('div', { class: 'head', text: 'Alone at the top' }));
   for (const g of order) {
@@ -550,6 +569,9 @@ function drawTally() {
     host.append(el('div', { text: gLabel[g.id] }), bar(low[g.id], 'var(--neg)', 'least favorably treated'), bar(high[g.id], 'var(--pos)', 'most favorably treated'));
   }
 }
+const headlineCounts = tallyCounts('all');
+const nextLowest = G.filter(g => g.id !== 'white').sort((a, b) => headlineCounts.low[b.id] - headlineCounts.low[a.id])[0];
+$('#headlineTally').replaceChildren('White ranked alone at the bottom in ', el('strong', { text: `${headlineCounts.low.white} of ${headlineCounts.total}` }), ` complete question–model comparisons with differing scores. ${gLabel[nextLowest.id]} was next, at `, el('strong', { text: String(headlineCounts.low[nextLowest.id]) }), '.');
 function drawAgreement() {
   $('#judgeSection').hidden = D.judges.length < 2;
   if (D.judges.length < 2) return;
@@ -561,7 +583,7 @@ function drawAgreement() {
     table.append(el('tr', {}, el('td', { class: 'name', text: short(m) }), ...[String(s.n ?? 0), s.compliance_exact == null ? '—' : fmt(s.compliance_exact * 100, 1) + '%', fmt(s.warmth_r), fmt(s.caveats_r), fmt(s.index_r)].map(text => el('td', { text }))));
   }
   $('#judgeLegend').replaceChildren(...judges.map((j, i) => el('span', { class: 'key' }, el('span', { class: 'sw', style: `background:${i === 0 ? 'var(--surface)' : 'var(--ink)'};border:2px solid var(--ink)` }), `Judge ${i === 0 ? 'A' : 'B'} · ${short(j)}`)));
-  const rows = order.map(g => ({ label: g.label, pts: judges.map((j, mi) => {
+  const rows = order.map(g => ({ label: displayLabel(g.label), pts: judges.map((j, mi) => {
     const v = mean(M.map(m => V.per_judge[j][m][g.id]));
     return { mi, v, hollow: mi === 0, tip: `${short(j)} · ${g.label}: ${fmt(v)}` };
   }) }));
@@ -575,7 +597,7 @@ function drawSubset() {
   drawIndex($('#indexPlot'), D, V, order); drawStats($('#statTable'), D, V); indexNumbers($('#indexExact'), D, V);
   const below = M.filter(m => V.index[m].white?.v != null && G.every(g => g.id === 'white' || V.index[m].white.v < V.index[m][g.id].v)).length;
   const above = M.filter(m => V.index[m].black?.v > 0).length;
-  $('#overallFinding').textContent = `White ranks lowest in ${below} of ${M.length} models; Black scores above the race average in ${above} of ${M.length}. ${subset === 'all' ? 'All questions are included where every race has a valid score.' : 'Showing the smaller, 30-prompt subset.'}`;
+  $('#overallFinding').textContent = `White ranks lowest in ${below} of ${M.length} models; Black scores above the race average in ${above} of ${M.length}. ${subset === 'all' ? 'All questions are included where every race has a valid score.' : 'Showing the smaller, 30-question subset.'}`;
   drawHeat(); drawTally(); drawAgreement();
   if (D.control) {
     const c = D.control, v = c.subsets[subset];
@@ -583,7 +605,7 @@ function drawSubset() {
     $('#controlScope').textContent = `${c.templates.length} questions · ${c.groups.length} state labels · ${c.models.length} models · ${c.samples} answers per combination. Same standardization and uncertainty calculation as the racial-label chart.`;
   }
 }
-seg($('#subsetSeg'), [['all', 'All questions'], ['strict', '30-prompt subset']], () => subset, v => { subset = v; drawSubset(); });
+seg($('#subsetSeg'), [['all', 'All questions'], ['strict', '30-question subset']], () => subset, v => { subset = v; drawSubset(); });
 
 // questions
 const MEASURE = {
@@ -671,20 +693,26 @@ function answerRange(t) {
   return {lo: +scale[1], hi: +scale[2], low: ends[0], high: ends[1]};
 }
 function rangeChart(t, values, groups = G, onGroup = null) {
-  const range = answerRange(t);
+  let range = answerRange(t);
+  if (!range && onGroup && t.id === 'salary') {
+    const peak = Math.max(1, ...values.filter(v => v != null));
+    const step = Math.pow(10, Math.floor(Math.log10(peak))) / 2;
+    const hi = Math.ceil(peak / step) * step;
+    range = { lo: 0, hi, low: '$0', middle: valueText(t, hi / 2), high: valueText(t, hi), currency: true };
+  }
   if (!range) return valueChart(t, values, groups, onGroup);
   const host = el('div', { class: 'answer-range', 'aria-label': range.question || questionLabel(t) });
   groups.forEach((g, i) => {
     const value = values[i], track = el('div', { class: 'range-track' });
     if (value != null) {
       const position = Math.max(0, Math.min(100, (value - range.lo) / (range.hi - range.lo) * 100));
-      const text = `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`;
+      const text = range.currency ? `${label(g.id)}: ${valueText(t, value)}` : `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`;
       const dot = el('span', { class: 'range-dot', style: `left:${position}%`, title: text, 'aria-label': text, ...(onGroup ? {} : { tabindex: '0' }) });
       hover(dot, text); track.append(dot);
     } else track.append(el('span', { class: 'small', text: '—', 'aria-label': 'No valid score' }));
-    appendChartRow(host, g, onGroup, `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`, el('span', { text: label(g.id) }), track);
+    appendChartRow(host, g, onGroup, range.currency ? `${label(g.id)}: ${valueText(t, value)}` : `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`, el('span', { text: label(g.id) }), track);
   });
-  host.append(el('div', { class: 'range-ends' }, el('span', { text: `${range.low} (${range.lo})` }), range.middle ? el('span', { text: range.middle }) : null, el('span', { text: `${range.high} (${range.hi})` })));
+  host.append(el('div', { class: 'range-ends' }, el('span', { text: range.currency ? range.low : `${range.low} (${range.lo})` }), range.middle ? el('span', { text: range.middle }) : null, el('span', { text: range.currency ? range.high : `${range.high} (${range.hi})` })));
   return host;
 }
 function valueText(t, value) {
@@ -722,7 +750,7 @@ function firstAnswers(t, model, a, b) {
   }));
   modelSelect.addEventListener('change', () => { model = modelSelect.value; updates.forEach(update => update()); });
   return {
-    node: el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'First saved answers' }, modelSelect), pair),
+    node: el('div', { class: 'example-answers' }, el('label', { class: 'field', text: 'Example answers' }, modelSelect), pair),
     pickGroup(group) {
       groupSelects[nextSide].value = group;
       updates[nextSide]();
@@ -772,7 +800,7 @@ function pValueHelp(t, check) {
 function drawExamples() {
   $('#exampleTestMethod').hidden = !D.example_checks;
   $('#exampleCorrection').hidden = !D.example_checks;
-  if (D.example_checks) $('#exampleCorrection').textContent = `Featured-example p-values use a finite-simulation correction followed by a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. Adjusted p-values below 0.05 are called statistically significant.`;
+  if (D.example_checks) $('#exampleCorrection').textContent = `Featured-example p-values use a standard correction for multiple comparisons (Bonferroni) across ${D.example_checks.family_size} questions. Adjusted p-values below 0.05 are called statistically significant.`;
   $('#examples').replaceChildren(...D.examples.map(id => {
     const t = D.templates.find(t => t.id === id), matched = matchedModels(t), values = groupMeans(t, matched);
     const prompt = promptNode(t.prompt, true);
@@ -782,7 +810,12 @@ function drawExamples() {
     const card = el('article', { class: 'panel example' }, heading, prompt);
     const range = answerRange(t);
     if (range?.question) card.append(el('p', { class: 'range-question', text: range.question }));
-    card.append(el('span', { class: 'small', text: `Average of ${matched.length} models` }));
+    const excluded = M.filter(m => !matched.includes(m));
+    const omissions = excluded.map(m => {
+      const noNumbers = t.measure === 'number' && G.every(g => D.cells[m]?.[t.id]?.[g.id]?.declined === D.samples);
+      return noNumbers ? `${short(m)} gave explanations instead of numerical ratings.` : `${short(m)} did not have valid scores for every race.`;
+    });
+    card.append(el('span', { class: 'small', text: `Average of ${matched.length} models${omissions.length ? '. ' + omissions.join(' ') : ''}` }));
     const chart = rangeChart(t, values, G, group => previewPrompt(prompt, group));
     document.addEventListener('pointerdown', e => { if (!chart.contains(e.target)) previewPrompt(prompt, null); });
     card.append(chart);
@@ -836,7 +869,7 @@ function drawQuestion() {
     target.setAttribute('aria-label', `${label(select.value)} answer`);
   }
   ga.addEventListener('change', () => changeGroup(ga, pa, true)); gb.addEventListener('change', () => changeGroup(gb, pb, false));
-  host.append(el('p', { class: 'small', text: `${short(requestModel)} · first saved answer for each race` }), el('div', { class: 'answer-pair' }, el('div', { class: 'answer' }, ga, pa), el('div', { class: 'answer' }, gb, pb)));
+  host.append(el('p', { class: 'small', text: `${short(requestModel)} · example answers` }), el('div', { class: 'answer-pair' }, el('div', { class: 'answer' }, ga, pa), el('div', { class: 'answer' }, gb, pb)));
   const values = G.map(g => D.cells[requestModel]?.[t.id]?.[g.id]?.raw ?? null);
   const range = answerRange(t);
   host.append(el('h3', { text: range?.question || (range ? 'Answers across all races' : ['salary', 'bail', 'donation'].includes(t.id) ? 'Amounts in US dollars' : 'Sentences in months') }), el('span', { class: 'small', text: `Average of up to ${D.samples} replies` }), rangeChart(t, values));
