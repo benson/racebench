@@ -215,3 +215,16 @@ Verified 24 alternating clicks across all six cards, model changes between
 clicks, saved-answer correspondence, card independence, keyboard and touch,
 row padding/continuity, the trimmed tooltips, and correction placement.
 Desktop and phone screenshots were reviewed with no browser errors or overflow.
+
+## Remove the dimension summary and simplify card headings
+
+Benson requested removing “Where the differences appeared” entirely. Removed
+its summary cards and heading; retained its existing tables in a collapsed
+“Scores, uncertainty, and statistical tests” panel alongside the bottom details.
+Significance labels now sit beneath each question title, left aligned, with the
+same hover, focus, and tap explanation.
+
+Verified all six labels remain on one line at desktop, 390px, and 320px widths;
+checked tooltip placement/dismissal, retained statistical tables, and no browser
+errors or horizontal overflow. Reviewed desktop and phone screenshots. Data and
+statistical results are unchanged.

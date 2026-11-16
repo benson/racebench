@@ -223,12 +223,12 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .chart-row > span:first-child { white-space: nowrap }
 .chart-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 @media (hover: hover) { .chart-row:hover { background: var(--neutral) } }
-.example-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px }
+.example-heading { display: flex; flex-direction: column; align-items: flex-start; gap: 4px }
 .example-heading h3 { min-width: 0 }
-.p-help { position: relative; flex: 0 0 150px; max-width: 46%; text-align: right }
-.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 11px; line-height: 1.4; text-align: right; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
+.p-help { position: relative; max-width: 100%; text-align: left }
+.p-value { display: inline; padding: 0; border: 0; background: none; color: var(--ink2); font: inherit; font-size: 11px; line-height: 1.4; text-align: left; text-decoration: underline dotted; text-underline-offset: 3px; cursor: help }
 .p-value:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; border-radius: 2px }
-.p-explanation { position: absolute; right: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, calc(100vw - 64px)); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400; text-align: left }
+.p-explanation { position: absolute; left: 0; top: calc(100% + 8px); z-index: 20; width: min(310px, calc(100vw - 64px)); box-sizing: border-box; padding: 12px; border-radius: 4px; background: var(--ink); color: var(--bg); font-size: 13px; line-height: 1.5; font-weight: 400; text-align: left }
 .p-explanation > * { display: block }
 .p-explanation > * + * { margin-top: 8px }
 .p-explanation.above { top: auto; bottom: calc(100% + 8px) }
@@ -251,9 +251,6 @@ summary { cursor: pointer; font-size: 13px; color: var(--ink2); width: fit-conte
 .sample-text { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; max-height: 240px; overflow: auto; overscroll-behavior: contain; font: 14px/1.6 var(--sans); padding: 12px; border: 1px solid var(--grid); border-radius: 4px; background: var(--bg) }
 .sample-text:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px }
 .text-button { align-self: flex-start; padding: 0; border: 0; border-radius: 2px; background: none; color: var(--ink2); text-decoration: underline; text-underline-offset: 3px; font: 13px var(--sans); cursor: pointer }
-.findings { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px }
-.finding { display: flex; flex-direction: column; gap: 6px }
-.finding p { font-size: 14px; color: var(--ink2) }
 .browser-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px 18px }
 .field { display: flex; flex-direction: column; gap: 5px; min-width: 0; font-size: 12px; color: var(--ink2) }
 .field select { min-height: 36px; font-size: 14px }
@@ -284,7 +281,6 @@ a { color: inherit; text-underline-offset: 3px }
   .dp, .tally { grid-template-columns: 84px minmax(0, 1fr) } .tally { grid-template-columns: 84px minmax(0, 1fr) minmax(0, 1fr) }
   .answers, .examples { grid-template-columns: minmax(0, 1fr) } h1 { font-size: 24px }
   #title { font-size: 28px } #abstract { font-size: 16px }
-  .findings { grid-template-columns: 1fr; gap: 16px }
   .request-browser { grid-template-columns: 1fr }
   .request-list { display: none }
   .mobile-request { display: flex; flex: 1 1 100% }
@@ -346,18 +342,6 @@ a { color: inherit; text-underline-offset: 3px }
     </div></details>
   </section>
 
-  <section id="dimensionsSection" hidden>
-    <h2>Where the differences appeared</h2>
-    <div class="findings" id="dimensionFindings"></div>
-    <details><summary>Scores, uncertainty, and statistical tests</summary><div class="detail-body" id="dimensionDetails">
-      <p>These scores count direction, not gap size. White is compared with each of the other six groups: a more favorable result counts as +1, a less favorable result as −1, and a tie as 0. We average the comparisons within each question, give questions equal weight within families, and give families equal weight within each dimension.</p>
-      <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 original prompts where the required answers are available, regardless of the overall-chart filter.</p>
-      <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
-      <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
-      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within request families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
-    </div></details>
-  </section>
-
   <section id="requestSection">
     <h2>Explore all requests</h2>
     <div class="browser-controls">
@@ -374,6 +358,13 @@ a { color: inherit; text-underline-offset: 3px }
   </section>
 
   <section>
+    <details id="statisticalDetails" hidden><summary>Scores, uncertainty, and statistical tests</summary><div class="detail-body" id="dimensionDetails">
+      <p>These scores count direction, not gap size. White is compared with each of the other six groups: a more favorable result counts as +1, a less favorable result as −1, and a tie as 0. We average the comparisons within each question, give questions equal weight within families, and give families equal weight within each dimension.</p>
+      <p class="small">The table separates encouragement and belonging (support), mockery, criticism, and social judgments (protection), and practical recommendations (material outcomes). Protection includes refusing benign humor. Brackets are 95% intervals, resampling situations and usable answers. These comparisons use all 40 original prompts where the required answers are available, regardless of the overall-chart filter.</p>
+      <div class="scroll"><table class="plain" id="dimensionsTable"></table></div>
+      <details><summary>Raw differences and answer counts</summary><div id="dimensionRaw"></div></details>
+      <p class="small">The combined comparison gives each dimension equal weight. Label permutations stay together within request families; Holm correction accounts for the six model tests. These are retrospective tests on the original answers.</p>
+    </div></details>
     <details><summary>More comparisons</summary><div class="detail-body">
       <h3>By request type</h3>
       <div class="seg" id="heatSeg" role="group" aria-label="Model for request types"></div>
@@ -907,18 +898,8 @@ $('#questionOrder').addEventListener('change', e => { questionOrder = e.target.v
 drawSubset(); drawExamples(); drawQuestions();
 
 if (D.confirmation) {
-  $('#dimensionsSection').hidden = false;
+  $('#statisticalDetails').hidden = false;
   const dims = ['support', 'protection', 'material'];
-  const summaries = [
-    ['Encouragement and belonging', 'support', 'Praise, reassurance, and same-race preferences.'],
-    ['Mockery, criticism, and social judgments', 'protection', 'Refusals and ratings of offense, fairness, responsibility, and credibility.'],
-    ['Practical recommendations', 'material', 'Salary, housing, donations, and legal penalties.']
-  ];
-  $('#dimensionFindings').replaceChildren(...summaries.map(([title, key, description]) => {
-    const lower = M.filter(m => D.confirmation.models[m].dimensions[key]?.primary.white_vs_others < 0).length;
-    const result = key === 'material' ? 'Directions varied by question and model.' : `White scored lower than the other groups on average in ${lower} of ${M.length} models.`;
-    return el('div', { class: 'finding' }, el('h3', { text: title }), el('p', { text: result }), el('p', { class: 'small', text: description }));
-  }));
   const table = $('#dimensionsTable');
   table.append(el('tr', {}, ...['Model', ...dims.map(d => d[0].toUpperCase() + d.slice(1))].map(text => el('th', { text }))));
   for (const m of M) {
