@@ -377,7 +377,6 @@ function dotPlot(host, rows, lo, hi, opt = {}) {
     for (const p of r.pts) {
       if (p.v == null) continue;
       const d = el('div', { class: 'dot', style: `top:${top(p.mi)};left:${pct(p.v)}%;background:${p.hollow ? 'var(--surface)' : colors[p.mi]};${p.hollow ? 'border:2px solid var(--ink)' : ''}` });
-      d.setAttribute('title', p.tip);
       d.setAttribute('aria-label', p.tip);
       hover(d, p.tip); track.append(d);
     }
@@ -611,7 +610,7 @@ function rangeChart(t, values, groups = G, onGroup = null) {
     if (value != null) {
       const position = Math.max(0, Math.min(100, (value - range.lo) / (range.hi - range.lo) * 100));
       const text = range.currency ? `${label(g.id)}: ${valueText(t, value)}` : `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`;
-      const dot = el('span', { class: 'range-dot', style: `left:${position}%`, title: text, 'aria-label': text, ...(onGroup ? {} : { tabindex: '0' }) });
+      const dot = el('span', { class: 'range-dot', style: `left:${position}%`, 'aria-label': text, ...(onGroup ? {} : { tabindex: '0' }) });
       hover(dot, text); track.append(dot);
     } else track.append(el('span', { class: 'small', text: '—', 'aria-label': 'No valid score' }));
     appendChartRow(host, g, onGroup, range.currency ? `${label(g.id)}: ${valueText(t, value)}` : `${label(g.id)}: ${fmt(value, 2)} on a ${range.lo}–${range.hi} scale`, el('span', { text: label(g.id) }), track);
